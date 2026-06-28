@@ -7,7 +7,7 @@ A beautiful, professional SIP (Systematic Investment Plan) calculator with infla
 - 💵 **Multi-Currency Support**: USD and INR (with Lakhs and Crores units)
 - 📊 **Inflation Adjustment**: Calculate real purchasing power over time
 - 📈 **Beautiful Charts**: Tufte-style minimalist visualization
-- 🎨 **Professional UI**: Apple-inspired design aesthetic
+- 🎨 **Professional UI**: Clean, modern design aesthetic
 - ⏱️ **Time Tracking**: Add custom age or milestone variables
 - 📱 **Responsive Design**: Works on desktop and mobile
 
@@ -128,10 +128,10 @@ Then open your browser and visit: `http://localhost:8000`
 
 The calculator features a clean, modern interface with:
 
-- Gradient background
-- Glass-effect container
+- Subtle gradient background
+- Professional white container with soft shadows
 - Minimalist charts with high data-ink ratio
-- Professional table layout
+- Clean table layout
 
 ## License
 
