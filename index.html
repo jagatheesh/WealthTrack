@@ -564,8 +564,9 @@
                 
                 // Update and add variable values to row
                 customVariables.forEach(v => {
-                    variableValues[v.id] += 1;
                     html += `<td>${variableValues[v.id]}</td>`;
+                    // Increment variables only after the first year
+                    variableValues[v.id] += 1;
                 });
                 html += '</tr>';
                 
@@ -595,7 +596,8 @@
                 
                 // Add variable data to chart (adjust index since we added inflation)
                 customVariables.forEach((v, i) => {
-                    chartDatasets[i + 2].data.push(variableValues[v.id]);
+                    // For chart, we need the value BEFORE increment (same as table)
+                    chartDatasets[i + 2].data.push(variableValues[v.id] - 1);
                 });
             }
             
