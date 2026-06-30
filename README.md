@@ -1,4 +1,4 @@
-# WealthTrack
+# MilestoneMoney
 
 A beautiful, professional SIP (Systematic Investment Plan) calculator with inflation adjustment and Tufte-style data visualization.
 
@@ -8,7 +8,7 @@ A beautiful, professional SIP (Systematic Investment Plan) calculator with infla
 - 📊 **Inflation Adjustment**: Calculate real purchasing power over time
 - 📈 **Beautiful Charts**: Tufte-style minimalist visualization
 - 🎨 **Professional UI**: Clean, modern design aesthetic
-- ⏱️ **Time Tracking**: Add custom age or milestone variables
+- ⏱️ **Milestone Tracking**: Add custom age or milestone variables
 - 📱 **Responsive Design**: Works on desktop and mobile
 
 ## Table of Contents
