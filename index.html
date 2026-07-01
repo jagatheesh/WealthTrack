@@ -1122,6 +1122,61 @@
         
         function parseCSV(csvText) {
             const lines = csvText.split('\n').filter(line => line.trim() !== '');
+            if (lines.length === 0) return { headers: [], transactions: [] };
+            
+            // Check if we have multi-row headers (like your equity holdings format)
+            const firstRow = lines[0].toLowerCase();
+            const secondRow = lines.length > 1 ? lines[1].toLowerCase() : '';
+            
+            if (firstRow.includes('equity holdings') || 
+                (firstRow.includes('company') && (secondRow.includes('% of aum') || secondRow.includes('shares')))) {
+                
+                // Special handling for multi-row header format
+                // Row 0: "Equity Holdings" + month headers
+                // Row 1: "% of AUM" and "No. of Shares" for each month
+                const monthHeaders = [];
+                const firstRowCells = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                const secondRowCells = lines[1].split(',').map(h => h.trim().replace(/"/g, ''));
+                
+                // Build combined headers from first 2 rows
+                const headers = ['Company']; // First column is Company
+                
+                for (let i = 1; i < Math.max(firstRowCells.length, secondRowCells.length); i++) {
+                    let header1 = firstRowCells[i] || '';
+                    let header2 = secondRowCells[i] || '';
+                    
+                    // If header1 is empty, try to find the previous non-empty one
+                    if (!header1 && i > 0) {
+                        for (let j = i - 1; j >= 0; j--) {
+                            if (firstRowCells[j]) {
+                                header1 = firstRowCells[j];
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (header1 || header2) {
+                        headers.push(`${header1} ${header2}`.trim());
+                    } else {
+                        headers.push(`Column ${i}`);
+                    }
+                }
+                
+                // Now parse data rows
+                const transactions = [];
+                for (let i = 2; i < lines.length; i++) {
+                    const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+                    const transaction = {};
+                    headers.forEach((header, index) => {
+                        transaction[header] = values[index] || '';
+                    });
+                    transactions.push(transaction);
+                }
+                
+                return { headers, transactions };
+            }
+            
+            // Regular single-row header CSV
             const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
             
             const transactions = [];
@@ -1133,6 +1188,7 @@
                 });
                 transactions.push(transaction);
             }
+            
             return { headers, transactions };
         }
         
@@ -1179,19 +1235,25 @@
         function processTransactions(transactions) {
             // First, try to detect if this is a holdings report or transaction history
             const firstRow = transactions[0] || {};
+            const secondRow = transactions[1] || {};
             const headers = Object.keys(firstRow);
-            const hasMonthHeaders = headers.some(h => h.toLowerCase().includes('aum') || h.toLowerCase().includes('may') || h.toLowerCase().includes('apr') || h.toLowerCase().includes('mar'));
-            const hasCompanyCol = headers.some(h => h.toLowerCase().includes('company') || h.toLowerCase().includes('scheme'));
+            const allRows = JSON.stringify(transactions).toLowerCase();
             
-            if (hasMonthHeaders && hasCompanyCol) {
-                // Process as equity holdings report
-                processHoldingsReport(transactions, headers);
+            // Check if it's a holdings report by looking for common patterns
+            const hasCompany = allRows.includes('company');
+            const hasAum = allRows.includes('aum');
+            const hasShares = allRows.includes('shares');
+            const hasMonths = allRows.includes('may-') || allRows.includes('apr-') || allRows.includes('mar-');
+            
+            if ((hasCompany && hasAum) || (hasCompany && hasShares)) {
+                // Process as equity holdings report - need to handle merged headers properly
+                processHoldingsReport(transactions);
                 return;
             }
             
             // Try to identify common column names (case insensitive)
-            const fundNameCols = ['fund name', 'scheme name', 'fund', 'scheme'];
-            const unitsCols = ['units', 'quantity', 'unit'];
+            const fundNameCols = ['fund name', 'scheme name', 'fund', 'scheme', 'company'];
+            const unitsCols = ['units', 'quantity', 'unit', 'shares'];
             const amountCols = ['amount', 'investment', 'value', 'price'];
             const typeCols = ['type', 'transaction type', 'trxn type', 'status'];
             const dateCols = ['date', 'transaction date', 'trxn date'];
@@ -1202,12 +1264,9 @@
             
             const fundCol = findCol(fundNameCols, headers);
             const unitsCol = findCol(unitsCols, headers);
-            const amountCol = findCol(amountCols, headers);
-            const typeCol = findCol(typeCols, headers);
-            const dateCol = findCol(dateCols, headers);
             
             if (!fundCol || !unitsCol) {
-                alert('Could not find required columns! Please ensure your CSV has Fund Name and Units.');
+                alert('Could not find required columns! Please check your CSV format or contact support.');
                 return;
             }
             
@@ -1227,6 +1286,10 @@
                         transactions: []
                     };
                 }
+                
+                const amountCol = findCol(amountCols, headers);
+                const typeCol = findCol(typeCols, headers);
+                const dateCol = findCol(dateCols, headers);
                 
                 let units = parseFloat(tx[unitsCol]) || 0;
                 let amount = parseFloat(tx[amountCol]) || 0;
@@ -1256,14 +1319,15 @@
             displayResults(fundPositions, transactions);
         }
         
-        function processHoldingsReport(holdings, headers) {
-            // Extract months from headers (look for AUM columns)
-            const months = [];
+        function processHoldingsReport(holdings) {
             const aumPattern = /([a-z]{3}-\d{2})/i;
+            const months = [];
             
+            // Find all month columns from headers
+            const headers = Object.keys(holdings[0] || {});
             headers.forEach(header => {
                 const match = header.match(aumPattern);
-                if (match) {
+                if (match && !months.find(m => m.key === match[1])) {
                     months.push({
                         key: match[1],
                         header: header,
@@ -1272,30 +1336,51 @@
                 }
             });
             
-            // Find corresponding "No. of Shares" columns for each month
+            // Find shares columns - they should be near AUM columns or have "shares" in name
             months.forEach(month => {
-                // Find shares column that appears near the AUM column
-                const aumIndex = headers.indexOf(month.header);
-                for (let i = Math.max(0, aumIndex - 5); i < Math.min(headers.length, aumIndex + 5); i++) {
-                    if (headers[i].toLowerCase().includes('no. of shares') || headers[i].toLowerCase().includes('shares')) {
-                        month.sharesHeader = headers[i];
+                // Look for shares column that's paired with this month
+                const monthKey = month.key;
+                for (let i = 0; i < headers.length; i++) {
+                    const header = headers[i];
+                    if (header.toLowerCase().includes(monthKey.toLowerCase()) && 
+                        (header.toLowerCase().includes('share') || header.toLowerCase().includes('no. of'))) {
+                        month.sharesHeader = header;
                         break;
                     }
                 }
+                // If not found, look for the next column after AUM
+                if (!month.sharesHeader) {
+                    const aumIndex = headers.indexOf(month.header);
+                    for (let j = Math.max(0, aumIndex); j < Math.min(headers.length, aumIndex + 3); j++) {
+                        if (headers[j].toLowerCase().includes('share')) {
+                            month.sharesHeader = headers[j];
+                            break;
+                        }
+                    }
+                }
             });
+            
+            // Filter out months without shares data
+            const validMonths = months.filter(m => m.sharesHeader);
+            
+            if (validMonths.length === 0) {
+                alert('Could not find share count data in your CSV');
+                return;
+            }
             
             // Analyze each company's position changes
             const companyAnalysis = [];
             
             holdings.forEach(row => {
                 const companyName = row['Company'] || row['company'] || '';
-                if (!companyName) return;
+                if (!companyName || companyName.toLowerCase().includes('company')) return;
                 
                 const changes = [];
                 let previousShares = null;
                 
-                for (let i = months.length - 1; i >= 0; i--) {
-                    const month = months[i];
+                // Process from oldest to newest month
+                for (let i = validMonths.length - 1; i >= 0; i--) {
+                    const month = validMonths[i];
                     const sharesStr = row[month.sharesHeader];
                     const shares = parseFloat(sharesStr) || 0;
                     
@@ -1304,8 +1389,8 @@
                         const pctChange = ((change / previousShares) * 100);
                         
                         changes.push({
-                            from: months[i].key,
-                            to: months[i+1].key,
+                            from: validMonths[i].key,
+                            to: validMonths[i+1].key,
                             change: change,
                             pctChange: pctChange
                         });
@@ -1315,8 +1400,8 @@
                 }
                 
                 // Determine overall trend
-                const latestMonth = months[0];
-                const oldestMonth = months[months.length - 1];
+                const latestMonth = validMonths[0];
+                const oldestMonth = validMonths[validMonths.length - 1];
                 const latestShares = parseFloat(row[latestMonth.sharesHeader]) || 0;
                 const oldestShares = parseFloat(row[oldestMonth.sharesHeader]) || 0;
                 const totalChange = latestShares - oldestShares;
@@ -1331,7 +1416,7 @@
                 });
             });
             
-            displayHoldingsAnalysis(companyAnalysis, months);
+            displayHoldingsAnalysis(companyAnalysis, validMonths);
         }
         
         function displayHoldingsAnalysis(companyAnalysis, months) {
