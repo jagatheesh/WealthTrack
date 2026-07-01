@@ -323,6 +323,11 @@
             </div>
             
             <div class="input-group">
+                <label for="stepup">Annual SIP Increase (%)</label>
+                <input type="number" id="stepup" value="5" step="1">
+            </div>
+            
+            <div class="input-group">
                 <label for="return">Annual Return (%)</label>
                 <input type="number" id="return" value="7" step="0.5">
             </div>
@@ -452,7 +457,8 @@
             const currency = document.getElementById('currency').value;
             const inrUnit = document.getElementById('inrUnit').value;
             let initial = parseFloat(document.getElementById('initial').value);
-            let monthlySIP = parseFloat(document.getElementById('annual').value);
+            let initialMonthlySIP = parseFloat(document.getElementById('annual').value);
+            const annualStepUpRate = parseFloat(document.getElementById('stepup').value) / 100;
             const annualRate = parseFloat(document.getElementById('return').value) / 100;
             const monthlyRate = annualRate / 12;
             const startYear = parseInt(document.getElementById('start-year').value);
@@ -460,7 +466,7 @@
             
             if (currency === 'INR') {
                 initial = convertToRupees(initial, inrUnit);
-                monthlySIP = convertToRupees(monthlySIP, inrUnit);
+                initialMonthlySIP = convertToRupees(initialMonthlySIP, inrUnit);
             }
             
             // Initialize variable values
@@ -470,7 +476,7 @@
             });
             
             let current = initial;
-            let html = '<tr><th>Year</th><th>Start Corpus</th><th>Total SIP</th><th>Growth</th><th>End Corpus</th><th>Inflation-Adjusted</th>';
+            let html = '<tr><th>Year</th><th>Start Corpus</th><th>Monthly SIP</th><th>Total SIP</th><th>Growth</th><th>End Corpus</th><th>Inflation-Adjusted</th>';
             
             // Add variable columns
             customVariables.forEach(v => {
@@ -536,19 +542,20 @@
                 const startCorpus = current;
                 let totalSIP = 0;
                 
+                // Calculate current year's monthly SIP with step-up
+                let currentMonthlySIP = initialMonthlySIP * Math.pow(1 + annualStepUpRate, yearOffset);
+                
                 // Monthly compounding and SIP contributions for 12 months
                 for (let month = 1; month <= 12; month++) {
                     // Add SIP at the end of the month (standard SIP practice)
                     const growth = current * monthlyRate;
-                    current = current + growth + monthlySIP;
-                    totalSIP += monthlySIP;
+                    current = current + growth + currentMonthlySIP;
+                    totalSIP += currentMonthlySIP;
                 }
                 
                 const growth = current - startCorpus - totalSIP;
                 
                 // Calculate inflation-adjusted (present value)
-                // Step-by-step: Year 1 → inflation factor = 1.04^1
-                // Year 2 → 1.04^2, etc.
                 const inflationFactor = Math.pow(1 + inflationRate, yearOffset + 1);
                 const inflationAdjusted = current / inflationFactor;
                 
@@ -556,7 +563,8 @@
                     <tr>
                         <td>${currentYear}</td>
                         <td>${formatNumber(startCorpus, currency, inrUnit)}</td>
-                        <td>+${formatNumber(totalSIP, currency, inrUnit)}</td>
+                        <td>${formatNumber(currentMonthlySIP, currency, inrUnit)}</td>
+                        <td>${formatNumber(totalSIP, currency, inrUnit)}</td>
                         <td class="positive">+${formatNumber(growth, currency, inrUnit)}</td>
                         <td>${formatNumber(current, currency, inrUnit)}</td>
                         <td>${formatNumber(inflationAdjusted, currency, inrUnit)}</td>
