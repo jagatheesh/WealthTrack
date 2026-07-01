@@ -531,9 +531,13 @@
         <div id="analyzer-tab" class="tab-content" style="display: none;">
             <div class="upload-section">
                 <h2>Upload MF Statement CSV</h2>
-                <p class="help-text">Download your monthly statement as CSV from your AMC (HDFC, SBI, ICICI, etc.)</p>
-                <input type="file" id="csv-upload" accept=".csv" class="file-upload">
-                <button class="calculate-btn" onclick="analyzeMFStatement()">Analyze Positions</button>
+                <p class="help-text">Upload one or more monthly statements (CSV format) from your AMC (HDFC, SBI, ICICI, etc.)</p>
+                <input type="file" id="csv-upload" accept=".csv" multiple class="file-upload">
+                <div id="file-list" style="margin-top: 12px; color: #48484a; text-align: left;"></div>
+                <div style="display: flex; gap: 12px; justify-content: center; margin-top: 16px;">
+                    <button class="calculate-btn" onclick="analyzeMFStatement()">Analyze All Positions</button>
+                    <button class="add-variable-btn" onclick="clearFiles()" style="padding: 12px 20px; border-radius: 12px; cursor: pointer;">Clear All Files</button>
+                </div>
             </div>
             
             <div class="results-section" id="mf-results" style="display: none;">
@@ -1092,6 +1096,30 @@
         }
         
         // MF Statement Analyzer
+        let uploadedFiles = [];
+        
+        // Listen for file selection
+        document.getElementById('csv-upload').addEventListener('change', function(e) {
+            uploadedFiles = Array.from(e.target.files);
+            const fileListDiv = document.getElementById('file-list');
+            
+            if (uploadedFiles.length > 0) {
+                fileListDiv.innerHTML = `
+                    <strong>📄 Uploaded (${uploadedFiles.length} file${uploadedFiles.length > 1 ? 's' : ''}):</strong><br>
+                    ${uploadedFiles.map(f => `• ${f.name}`).join('<br>')}
+                `;
+            } else {
+                fileListDiv.innerHTML = '';
+            }
+        });
+        
+        function clearFiles() {
+            uploadedFiles = [];
+            document.getElementById('csv-upload').value = '';
+            document.getElementById('file-list').innerHTML = '';
+            document.getElementById('mf-results').style.display = 'none';
+        }
+        
         function parseCSV(csvText) {
             const lines = csvText.split('\n').filter(line => line.trim() !== '');
             const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
@@ -1108,26 +1136,44 @@
             return { headers, transactions };
         }
         
-        function analyzeMFStatement() {
+        async function analyzeMFStatement() {
             const fileInput = document.getElementById('csv-upload');
-            const file = fileInput.files[0];
+            const files = uploadedFiles.length > 0 ? uploadedFiles : fileInput.files;
             
-            if (!file) {
-                alert('Please upload a CSV file first!');
+            if (files.length === 0) {
+                alert('Please upload at least one CSV file!');
                 return;
             }
             
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const csvData = parseCSV(e.target.result);
-                    processTransactions(csvData.transactions);
-                } catch (error) {
-                    alert('Error parsing CSV file. Please check the format.');
-                    console.error(error);
-                }
-            };
-            reader.readAsText(file);
+            const allTransactions = [];
+            
+            for (const file of files) {
+                const transactions = await readFile(file);
+                allTransactions.push(...transactions);
+            }
+            
+            try {
+                processTransactions(allTransactions);
+            } catch (error) {
+                alert('Error analyzing CSV files. Please check the format.');
+                console.error(error);
+            }
+        }
+        
+        function readFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const csvData = parseCSV(e.target.result);
+                        resolve(csvData.transactions);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
         }
         
         function processTransactions(transactions) {
