@@ -1126,53 +1126,114 @@
             
             // Check if this is an equity holdings format (your exact format)
             const firstRow = lines[0].toLowerCase();
-            const secondRow = lines.length > 1 ? lines[1].toLowerCase() : '';
             
             if (firstRow.includes('equity holdings')) {
                 
-                // Special handling for your exact format
-                // Row 0: "Equity Holdings" + month headers + empty separators
-                // Row 1: "% of AUM" + "No. of Shares" for each month
-                const firstRowCells = lines[0].split('\t').map(h => h.trim().replace(/"/g, ''));
-                const secondRowCells = lines[1].split('\t').map(h => h.trim().replace(/"/g, ''));
+                // Special handling for your exact format - let's be super flexible
+                // Try both tabs and commas in case of formatting issues
+                let firstRowCells = lines[0].split('\t').map(h => h.trim().replace(/"/g, ''));
+                let secondRowCells = lines[1].split('\t').map(h => h.trim().replace(/"/g, ''));
+                
+                // If that doesn't give us enough columns, try commas
+                if (firstRowCells.length < 4) {
+                    firstRowCells = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                    secondRowCells = lines[1].split(',').map(h => h.trim().replace(/"/g, ''));
+                }
                 
                 // Build combined headers
                 const headers = ['Company'];
                 const months = [];
                 
-                for (let i = 1; i < Math.max(firstRowCells.length, secondRowCells.length); i++) {
-                    let header1 = firstRowCells[i] || '';
-                    let header2 = secondRowCells[i] || '';
+                // First pass: collect all months from first row
+                const monthNames = [];
+                for (let i = 1; i < firstRowCells.length; i++) {
+                    const header = firstRowCells[i];
+                    const monthMatch = header.match(/([A-Z][a-z]{2}-\d{2})/);
+                    if (monthMatch && !monthNames.includes(monthMatch[1])) {
+                        monthNames.push(monthMatch[1]);
+                    }
+                }
+                
+                // Now pair months with their "% of AUM" and "No. of Shares" columns
+                // Looking at your format: [Month AUM][empty][%][No. of Shares][empty][Month AUM][empty][%][No. of Shares]...
+                let monthIndex = 0;
+                for (let i = 1; i < Math.max(firstRowCells.length, secondRowCells.length) && monthIndex < monthNames.length; i++) {
+                    const header1 = firstRowCells[i];
+                    const header2 = secondRowCells[i];
                     
-                    // Extract month from header1 if present
                     const monthMatch = header1.match(/([A-Z][a-z]{2}-\d{2})/);
-                    if (monthMatch) {
+                    if (monthMatch && monthNames[monthIndex] === monthMatch[1]) {
                         months.push({
                             name: monthMatch[1],
-                            aumIndex: i,
-                            sharesIndex: i + 1
+                            aumIndex: i + 2,
+                            sharesIndex: i + 3
                         });
                         // Add both AUM and Shares headers
                         headers.push(`${monthMatch[1]} % of AUM`);
                         headers.push(`${monthMatch[1]} No. of Shares`);
+                        monthIndex++;
+                        i += 3; // Skip ahead past the separator, %, and shares columns
+                    }
+                }
+                
+                // Fallback: if our pattern matching failed, just use all columns that have "Shares" in second row
+                if (months.length === 0) {
+                    for (let i = 1; i < secondRowCells.length; i++) {
+                        if (secondRowCells[i].toLowerCase().includes('shares')) {
+                            // Find the corresponding month
+                            let monthName = `Month ${months.length + 1}`;
+                            for (let j = i; j >= 0; j--) {
+                                if (firstRowCells[j]) {
+                                    const m = firstRowCells[j].match(/([A-Z][a-z]{2}-\d{2})/);
+                                    if (m) {
+                                        monthName = m[1];
+                                        break;
+                                    }
+                                }
+                            }
+                            months.push({
+                                name: monthName,
+                                aumIndex: i - 1,
+                                sharesIndex: i
+                            });
+                            headers.push(`${monthName} % of AUM`);
+                            headers.push(`${monthName} No. of Shares`);
+                        }
                     }
                 }
                 
                 // Now parse data rows (skip first 2 header rows)
                 const transactions = [];
                 for (let i = 2; i < lines.length; i++) {
-                    const cells = lines[i].split('\t').map(v => v.trim().replace(/"/g, ''));
+                    let cells = lines[i].split('\t').map(v => v.trim().replace(/"/g, ''));
+                    if (cells.length < 4) {
+                        cells = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+                    }
+                    
                     // Skip empty rows or section headers
                     if (cells[0] === '' || cells[0].toLowerCase().includes('debt holdings') || 
                         cells[0].toLowerCase().includes('cash & cash') || 
                         cells[0].toLowerCase().includes('miscellaneous') || 
-                        cells[0].toLowerCase().includes('disclaimer')) {
+                        cells[0].toLowerCase().includes('disclaimer') ||
+                        cells[0].toLowerCase().includes('instrument')) {
                         continue;
                     }
                     
                     const transaction = {};
                     headers.forEach((header, index) => {
-                        transaction[header] = cells[index] || '';
+                        if (index === 0) {
+                            transaction[header] = cells[0] || '';
+                        } else {
+                            // Find the month for this header
+                            const m = months.find(mo => header.startsWith(mo.name));
+                            if (m) {
+                                if (header.includes('AUM')) {
+                                    transaction[header] = cells[m.aumIndex] || '';
+                                } else {
+                                    transaction[header] = cells[m.sharesIndex] || '';
+                                }
+                            }
+                        }
                     });
                     transactions.push(transaction);
                 }
@@ -1181,11 +1242,18 @@
             }
             
             // Regular single-row header CSV (fallback)
-            const headers = lines[0].split('\t').map(h => h.trim().replace(/"/g, ''));
+            let headers = lines[0].split('\t').map(h => h.trim().replace(/"/g, ''));
+            if (headers.length < 4) {
+                headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            }
             
             const transactions = [];
             for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split('\t').map(v => v.trim().replace(/"/g, ''));
+                let values = lines[i].split('\t').map(v => v.trim().replace(/"/g, ''));
+                if (values.length < 4) {
+                    values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+                }
+                
                 const transaction = {};
                 headers.forEach((header, index) => {
                     transaction[header] = values[index] || '';
