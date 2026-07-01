@@ -1177,6 +1177,18 @@
         }
         
         function processTransactions(transactions) {
+            // First, try to detect if this is a holdings report or transaction history
+            const firstRow = transactions[0] || {};
+            const headers = Object.keys(firstRow);
+            const hasMonthHeaders = headers.some(h => h.toLowerCase().includes('aum') || h.toLowerCase().includes('may') || h.toLowerCase().includes('apr') || h.toLowerCase().includes('mar'));
+            const hasCompanyCol = headers.some(h => h.toLowerCase().includes('company') || h.toLowerCase().includes('scheme'));
+            
+            if (hasMonthHeaders && hasCompanyCol) {
+                // Process as equity holdings report
+                processHoldingsReport(transactions, headers);
+                return;
+            }
+            
             // Try to identify common column names (case insensitive)
             const fundNameCols = ['fund name', 'scheme name', 'fund', 'scheme'];
             const unitsCols = ['units', 'quantity', 'unit'];
@@ -1188,7 +1200,6 @@
                 return headers.find(h => cols.includes(h.toLowerCase()));
             };
             
-            const headers = Object.keys(transactions[0] || {});
             const fundCol = findCol(fundNameCols, headers);
             const unitsCol = findCol(unitsCols, headers);
             const amountCol = findCol(amountCols, headers);
@@ -1243,6 +1254,155 @@
             });
             
             displayResults(fundPositions, transactions);
+        }
+        
+        function processHoldingsReport(holdings, headers) {
+            // Extract months from headers (look for AUM columns)
+            const months = [];
+            const aumPattern = /([a-z]{3}-\d{2})/i;
+            
+            headers.forEach(header => {
+                const match = header.match(aumPattern);
+                if (match) {
+                    months.push({
+                        key: match[1],
+                        header: header,
+                        sharesHeader: null
+                    });
+                }
+            });
+            
+            // Find corresponding "No. of Shares" columns for each month
+            months.forEach(month => {
+                // Find shares column that appears near the AUM column
+                const aumIndex = headers.indexOf(month.header);
+                for (let i = Math.max(0, aumIndex - 5); i < Math.min(headers.length, aumIndex + 5); i++) {
+                    if (headers[i].toLowerCase().includes('no. of shares') || headers[i].toLowerCase().includes('shares')) {
+                        month.sharesHeader = headers[i];
+                        break;
+                    }
+                }
+            });
+            
+            // Analyze each company's position changes
+            const companyAnalysis = [];
+            
+            holdings.forEach(row => {
+                const companyName = row['Company'] || row['company'] || '';
+                if (!companyName) return;
+                
+                const changes = [];
+                let previousShares = null;
+                
+                for (let i = months.length - 1; i >= 0; i--) {
+                    const month = months[i];
+                    const sharesStr = row[month.sharesHeader];
+                    const shares = parseFloat(sharesStr) || 0;
+                    
+                    if (previousShares !== null && previousShares !== 0) {
+                        const change = shares - previousShares;
+                        const pctChange = ((change / previousShares) * 100);
+                        
+                        changes.push({
+                            from: months[i].key,
+                            to: months[i+1].key,
+                            change: change,
+                            pctChange: pctChange
+                        });
+                    }
+                    
+                    previousShares = shares;
+                }
+                
+                // Determine overall trend
+                const latestMonth = months[0];
+                const oldestMonth = months[months.length - 1];
+                const latestShares = parseFloat(row[latestMonth.sharesHeader]) || 0;
+                const oldestShares = parseFloat(row[oldestMonth.sharesHeader]) || 0;
+                const totalChange = latestShares - oldestShares;
+                
+                companyAnalysis.push({
+                    company: companyName,
+                    latestShares: latestShares,
+                    oldestShares: oldestShares,
+                    totalChange: totalChange,
+                    changes: changes,
+                    trend: totalChange > 0 ? 'accumulating' : totalChange < 0 ? 'reducing' : 'stable'
+                });
+            });
+            
+            displayHoldingsAnalysis(companyAnalysis, months);
+        }
+        
+        function displayHoldingsAnalysis(companyAnalysis, months) {
+            const resultsSection = document.getElementById('mf-results');
+            const accumulatingDiv = document.getElementById('accumulating-funds');
+            const trimmingDiv = document.getElementById('trimming-funds');
+            const transactionsTable = document.getElementById('mf-transactions');
+            
+            resultsSection.style.display = 'block';
+            
+            // Update section headers
+            const resultsHeader = resultsSection.querySelector('h3');
+            if (resultsHeader) {
+                resultsHeader.textContent = 'Equity Holdings Analysis';
+            }
+            
+            // Separate into accumulating and reducing
+            const accumulating = companyAnalysis.filter(c => c.trend === 'accumulating');
+            const reducing = companyAnalysis.filter(c => c.trend === 'reducing');
+            const stable = companyAnalysis.filter(c => c.trend === 'stable');
+            
+            // Display accumulating
+            accumulatingDiv.innerHTML = accumulating.length 
+                ? `<strong style="color: #34c759; display: block; margin-bottom: 8px;">📈 Accumulating (${accumulating.length} stocks)</strong>` + accumulating.map(c => `
+                    <div style="margin: 8px 0; padding: 10px 12px; background: white; border-radius: 8px;">
+                        <strong>${c.company}</strong><br>
+                        <span style="color: #34c759;">+${c.totalChange.toLocaleString()} shares (${(c.totalChange / (c.oldestShares || 1)).toFixed(1)}%)</span>
+                    </div>
+                `).join('')
+                : '<p style="color: #86868b;">No accumulating stocks</p>';
+            
+            // Display reducing
+            trimmingDiv.innerHTML = reducing.length 
+                ? `<strong style="color: #ff3b30; display: block; margin-bottom: 8px;">📉 Reducing (${reducing.length} stocks)</strong>` + reducing.map(c => `
+                    <div style="margin: 8px 0; padding: 10px 12px; background: white; border-radius: 8px;">
+                        <strong>${c.company}</strong><br>
+                        <span style="color: #ff3b30;">-${Math.abs(c.totalChange).toLocaleString()} shares (${(Math.abs(c.totalChange) / (c.oldestShares || 1)).toFixed(1)}%)</span>
+                    </div>
+                `).join('')
+                : '<p style="color: #86868b;">No reducing stocks</p>';
+            
+            // Display holdings table
+            let tableHTML = `
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Trend</th>
+                        <th>Latest Shares</th>
+                        <th>Change</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+            
+            companyAnalysis.forEach(c => {
+                const trendIcon = c.trend === 'accumulating' ? '📈' : c.trend === 'reducing' ? '📉' : '➖';
+                const trendColor = c.trend === 'accumulating' ? '#34c759' : c.trend === 'reducing' ? '#ff3b30' : '#86868b';
+                const changeText = c.totalChange > 0 ? `+${c.totalChange.toLocaleString()}` : c.totalChange < 0 ? `${c.totalChange.toLocaleString()}` : '0';
+                
+                tableHTML += `
+                    <tr>
+                        <td>${c.company}</td>
+                        <td style="color: ${trendColor}; font-weight: 600;">${trendIcon} ${c.trend}</td>
+                        <td>${c.latestShares.toLocaleString()}</td>
+                        <td style="color: ${trendColor};">${changeText}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += '</tbody>';
+            transactionsTable.innerHTML = tableHTML;
         }
         
         function displayResults(fundPositions, transactions) {
