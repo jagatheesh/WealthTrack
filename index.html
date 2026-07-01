@@ -1126,15 +1126,8 @@
 
             const firstRow = lines[0].toLowerCase();
             if (firstRow.includes('equity holdings')) {
-                // Super flexible - try all possible separators
-                const separators = ['\t', ',', '|', ';'];
-                
-                for (const sep of separators) {
-                    const result = tryParseWithSeparator(lines, sep);
-                    if (result.months.length > 0) {
-                        return result;
-                    }
-                }
+                // We know this is comma-separated from your file
+                return tryParseWithSeparator(lines, ',');
             }
             
             // Regular CSV parsing as fallback
