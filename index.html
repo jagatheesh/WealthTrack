@@ -1126,68 +1126,15 @@
 
             const firstRow = lines[0].toLowerCase();
             if (firstRow.includes('equity holdings')) {
-                // Direct, simple parsing for your exact format
-                const firstRowCells = lines[0].split(/\t/).map(h => h.trim().replace(/"/g, ''));
-                const secondRowCells = lines[1].split(/\t/).map(h => h.trim().replace(/"/g, ''));
+                // Super flexible - try all possible separators
+                const separators = ['\t', ',', '|', ';'];
                 
-                const headers = ['Company'];
-                const months = [];
-
-                // Find all "No. of Shares" columns and their corresponding months
-                for (let i = 0; i < secondRowCells.length; i++) {
-                    if (secondRowCells[i].toLowerCase().includes('shares')) {
-                        // Find the month in first row
-                        let monthName = `Month ${months.length + 1}`;
-                        for (let j = i; j >= 0; j--) {
-                            if (firstRowCells[j]) {
-                                const match = firstRowCells[j].match(/([A-Z][a-z]{2}-\d{2})/);
-                                if (match) {
-                                    monthName = match[1];
-                                    break;
-                                }
-                            }
-                        }
-                        
-                        const aumIndex = i - 1;
-                        const sharesIndex = i;
-                        
-                        months.push({
-                            name: monthName,
-                            aumIndex: aumIndex,
-                            sharesIndex: sharesIndex
-                        });
-                        
-                        headers.push(`${monthName} % of AUM`);
-                        headers.push(`${monthName} No. of Shares`);
+                for (const sep of separators) {
+                    const result = tryParseWithSeparator(lines, sep);
+                    if (result.months.length > 0) {
+                        return result;
                     }
                 }
-                
-                const transactions = [];
-                
-                for (let i = 2; i < lines.length; i++) {
-                    const cells = lines[i].split(/\t/).map(h => h.trim().replace(/"/g, ''));
-                    
-                    if (cells[0] === '' || 
-                        cells[0].toLowerCase().includes('debt') || 
-                        cells[0].toLowerCase().includes('cash') || 
-                        cells[0].toLowerCase().includes('misc') || 
-                        cells[0].toLowerCase().includes('disclaimer') ||
-                        cells[0].toLowerCase().includes('instrument')) {
-                        continue;
-                    }
-                    
-                    const transaction = {};
-                    transaction['Company'] = cells[0];
-                    
-                    months.forEach(m => {
-                        transaction[`${m.name} % of AUM`] = cells[m.aumIndex] || '';
-                        transaction[`${m.name} No. of Shares`] = cells[m.sharesIndex] || '';
-                    });
-                    
-                    transactions.push(transaction);
-                }
-                
-                return { headers, transactions };
             }
             
             // Regular CSV parsing as fallback
@@ -1213,6 +1160,68 @@
             return { headers, transactions };
         }
         
+        function tryParseWithSeparator(lines, sep) {
+            const firstRowCells = lines[0].split(sep).map(h => h.trim().replace(/"/g, ''));
+            const secondRowCells = lines[1].split(sep).map(h => h.trim().replace(/"/g, ''));
+            
+            const headers = ['Company'];
+            const months = [];
+
+            for (let i = 0; i < secondRowCells.length; i++) {
+                if (secondRowCells[i].toLowerCase().includes('shares')) {
+                    let monthName = `Month ${months.length + 1}`;
+                    for (let j = i; j >= 0; j--) {
+                        if (firstRowCells[j]) {
+                            const match = firstRowCells[j].match(/([A-Z][a-z]{2}-\d{2})/i);
+                            if (match) {
+                                monthName = match[1];
+                                break;
+                            }
+                        }
+                    }
+                    
+                    const aumIndex = i - 1;
+                    const sharesIndex = i;
+                    
+                    months.push({
+                        name: monthName,
+                        aumIndex: aumIndex,
+                        sharesIndex: sharesIndex
+                    });
+                    
+                    headers.push(`${monthName} % of AUM`);
+                    headers.push(`${monthName} No. of Shares`);
+                }
+            }
+            
+            const transactions = [];
+            
+            for (let i = 2; i < lines.length; i++) {
+                const cells = lines[i].split(sep).map(h => h.trim().replace(/"/g, ''));
+                
+                if (cells[0] === '' || 
+                    cells[0].toLowerCase().includes('debt') || 
+                    cells[0].toLowerCase().includes('cash') || 
+                    cells[0].toLowerCase().includes('misc') || 
+                    cells[0].toLowerCase().includes('disclaimer') ||
+                    cells[0].toLowerCase().includes('instrument')) {
+                    continue;
+                }
+                
+                const transaction = {};
+                transaction['Company'] = cells[0];
+                
+                months.forEach(m => {
+                    transaction[`${m.name} % of AUM`] = cells[m.aumIndex] || '';
+                    transaction[`${m.name} No. of Shares`] = cells[m.sharesIndex] || '';
+                });
+                
+                transactions.push(transaction);
+            }
+            
+            return { headers, transactions, months };
+        }
+        
         async function analyzeMFStatement() {
             const fileInput = document.getElementById('csv-upload');
             const files = uploadedFiles.length > 0 ? uploadedFiles : fileInput.files;
@@ -1222,14 +1231,31 @@
                 return;
             }
             
-            const allTransactions = [];
+            const allData = [];
             
             for (const file of files) {
-                const transactions = await readFile(file);
-                allTransactions.push(...transactions);
+                const data = await readFile(file);
+                if (data.transactions && data.transactions.length > 0) {
+                    allData.push(data);
+                }
+            }
+            
+            if (allData.length === 0) {
+                alert('Could not find any data in the uploaded files.');
+                return;
             }
             
             try {
+                // If we got parsed months, process as holdings report
+                if (allData[0].months && allData[0].months.length > 0) {
+                    // Combine all transactions from all files
+                    const allTransactions = [].concat(...allData.map(d => d.transactions));
+                    processHoldingsReport(allTransactions, allData[0].months);
+                    return;
+                }
+                
+                // Otherwise, process as transactions
+                const allTransactions = [].concat(...allData.map(d => d.transactions));
                 processTransactions(allTransactions);
             } catch (error) {
                 alert('Error analyzing CSV files. Please check the format.');
@@ -1243,7 +1269,7 @@
                 reader.onload = function(e) {
                     try {
                         const csvData = parseCSV(e.target.result);
-                        resolve(csvData.transactions);
+                        resolve(csvData);
                     } catch (error) {
                         reject(error);
                     }
@@ -1340,20 +1366,31 @@
             displayResults(fundPositions, transactions);
         }
         
-        function processHoldingsReport(holdings) {
-            const months = [];
-            const headers = Object.keys(holdings[0] || {});
+        function processHoldingsReport(holdings, parsedMonths) {
+            let months = parsedMonths || [];
             
-            // Extract months from our parsed headers
-            headers.forEach(header => {
-                const match = header.match(/([A-Z][a-z]{2}-\d{2})/);
-                if (match && !months.find(m => m.key === match[1]) && header.includes('No. of Shares')) {
-                    months.push({
-                        key: match[1],
-                        sharesHeader: header
-                    });
-                }
-            });
+            // If months not provided, try to extract from headers
+            if (months.length === 0) {
+                const headers = Object.keys(holdings[0] || {});
+                headers.forEach(header => {
+                    const match = header.match(/([A-Z][a-z]{2}-\d{2})/i);
+                    if (match && !months.find(m => m.key === match[1]) && header.includes('No. of Shares')) {
+                        months.push({
+                            key: match[1],
+                            sharesHeader: header
+                        });
+                    }
+                });
+            }
+            
+            // If we have months from parser, convert them to the expected format
+            if (months.length > 0 && !months[0].sharesHeader) {
+                const headers = Object.keys(holdings[0] || {});
+                months = months.map(m => ({
+                    key: m.name,
+                    sharesHeader: `${m.name} No. of Shares`
+                }));
+            }
             
             if (months.length === 0) {
                 alert('Could not find share count data in your CSV. Please check the file format.');
