@@ -1154,8 +1154,20 @@
         }
         
         function tryParseWithSeparator(lines, sep) {
-            const firstRowCells = lines[0].split(sep).map(h => h.trim().replace(/"/g, ''));
-            const secondRowCells = lines[1].split(sep).map(h => h.trim().replace(/"/g, ''));
+            // Find the actual header rows - your file has first line as "Equity Holdings"
+            let headerRow1 = 0;
+            let headerRow2 = 1;
+            
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].toLowerCase().includes('company')) {
+                    headerRow1 = i;
+                    headerRow2 = i + 1;
+                    break;
+                }
+            }
+            
+            const firstRowCells = lines[headerRow1].split(sep).map(h => h.trim().replace(/"/g, ''));
+            const secondRowCells = lines[headerRow2].split(sep).map(h => h.trim().replace(/"/g, ''));
             
             const headers = ['Company'];
             const months = [];
@@ -1189,7 +1201,7 @@
             
             const transactions = [];
             
-            for (let i = 2; i < lines.length; i++) {
+            for (let i = headerRow2 + 1; i < lines.length; i++) {
                 const cells = lines[i].split(sep).map(h => h.trim().replace(/"/g, ''));
                 
                 if (cells[0] === '' || 
