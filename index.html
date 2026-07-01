@@ -311,6 +311,98 @@
             margin: 12px 0 0 0;
         }
         
+        .tab-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+            justify-content: center;
+        }
+        
+        .tab-btn {
+            padding: 12px 28px;
+            background: #f5f5f7;
+            color: #48484a;
+            border: 1px solid #e5e5ea;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .tab-btn:hover {
+            background: #e5e5ea;
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, #007aff 0%, #0051d5 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+        }
+        
+        .upload-section {
+            background: #f5f5f7;
+            padding: 28px;
+            border-radius: 16px;
+            border: 1px solid #e5e5ea;
+            margin-bottom: 28px;
+            text-align: center;
+        }
+        
+        .upload-section h2 {
+            color: #1d1d1f;
+            font-size: 20px;
+            margin: 0 0 8px 0;
+        }
+        
+        .help-text {
+            color: #86868b;
+            font-size: 14px;
+            margin: 0 0 20px 0;
+        }
+        
+        .file-upload {
+            width: 100%;
+            max-width: 400px;
+            padding: 14px;
+            border: 2px dashed #c7c7cc;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+        
+        .file-upload:hover {
+            border-color: #007aff;
+        }
+        
+        .position-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+        
+        .summary-card {
+            background: #f5f5f7;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid #e5e5ea;
+        }
+        
+        .summary-card h4 {
+            margin: 0 0 12px 0;
+            color: #1d1d1f;
+        }
+        
+        .summary-card.positive {
+            border-left: 4px solid #34c759;
+        }
+        
+        .summary-card.negative {
+            border-left: 4px solid #ff3b30;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 padding: 32px 24px;
@@ -323,6 +415,15 @@
             .input-section {
                 grid-template-columns: 1fr;
             }
+            
+            .position-summary {
+                grid-template-columns: 1fr;
+            }
+            
+            .tab-btn {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
@@ -331,32 +432,38 @@
         <h1>MilestoneMoney</h1>
         <p class="subtitle">Watch your wealth grow, sip by sip 💸</p>
         
-        <div class="historical-section">
-            <h2>Historical Market Context</h2>
-            <div id="historical-info">
-                <p class="historical-note">
-                    <strong>INR Markets:</strong> Nifty 50 average (1990-2025): ~12% annual return | Sensex average: ~13%
-                    <button class="historical-btn" onclick="setHistoricalReturn('nifty')">Use Nifty 50 (12%)</button>
-                    <button class="historical-btn" onclick="setHistoricalReturn('sensex')">Use Sensex (13%)</button>
-                </p>
-            </div>
-            <p class="disclaimer">
-                ⚠️ Note: Past performance does not guarantee future results. Historical averages are for reference only.
-            </p>
+        <div class="tab-container">
+            <button class="tab-btn active" onclick="switchTab('calculator')">SIP Calculator</button>
+            <button class="tab-btn" onclick="switchTab('analyzer')">MF Position Analyzer</button>
         </div>
         
-        <!-- 
-        Alternative catchy taglines:
-        
-        1. "Invest small, grow big – sip by sip"
-        2. "Your financial future, one sip at a time"
-        3. "SIP smarter, grow wealthier"
-        4. "Watch your wealth blossom with every SIP"
-        5. "Small monthly steps, giant wealth leaps"
-        6. "Turn your dreams into wealth, one SIP at a time"
-        -->
-        
-        <div class="input-section">
+        <div id="calculator-tab" class="tab-content">
+            <div class="historical-section">
+                <h2>Historical Market Context</h2>
+                <div id="historical-info">
+                    <p class="historical-note">
+                        <strong>INR Markets:</strong> Nifty 50 average (1990-2025): ~12% annual return | Sensex average: ~13%
+                        <button class="historical-btn" onclick="setHistoricalReturn('nifty')">Use Nifty 50 (12%)</button>
+                        <button class="historical-btn" onclick="setHistoricalReturn('sensex')">Use Sensex (13%)</button>
+                    </p>
+                </div>
+                <p class="disclaimer">
+                    ⚠️ Note: Past performance does not guarantee future results. Historical averages are for reference only.
+                </p>
+            </div>
+            
+            <!-- 
+            Alternative catchy taglines:
+            
+            1. "Invest small, grow big – sip by sip"
+            2. "Your financial future, one sip at a time"
+            3. "SIP smarter, grow wealthier"
+            4. "Watch your wealth blossom with every SIP"
+            5. "Small monthly steps, giant wealth leaps"
+            6. "Turn your dreams into wealth, one SIP at a time"
+            -->
+            
+            <div class="input-section">
             <div class="input-group">
                 <label for="currency">Currency</label>
                 <select id="currency">
@@ -419,6 +526,35 @@
         
         <table id="results">
         </table>
+        </div>
+        
+        <div id="analyzer-tab" class="tab-content" style="display: none;">
+            <div class="upload-section">
+                <h2>Upload MF Statement CSV</h2>
+                <p class="help-text">Download your monthly statement as CSV from your AMC (HDFC, SBI, ICICI, etc.)</p>
+                <input type="file" id="csv-upload" accept=".csv" class="file-upload">
+                <button class="calculate-btn" onclick="analyzeMFStatement()">Analyze Positions</button>
+            </div>
+            
+            <div class="results-section" id="mf-results" style="display: none;">
+                <h3>Position Analysis</h3>
+                
+                <div class="position-summary">
+                    <div class="summary-card positive">
+                        <h4>📈 Accumulating (Net Buy)</h4>
+                        <div id="accumulating-funds"></div>
+                    </div>
+                    <div class="summary-card negative">
+                        <h4>📉 Trimming (Net Sell)</h4>
+                        <div id="trimming-funds"></div>
+                    </div>
+                </div>
+                
+                <h3>Detailed Transaction History</h3>
+                <table id="mf-transactions">
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -935,6 +1071,204 @@
         renderCustomVariables();
         
         calculate();
+        
+        // Tab Switching
+        function switchTab(tab) {
+            const calculatorTab = document.getElementById('calculator-tab');
+            const analyzerTab = document.getElementById('analyzer-tab');
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            
+            if (tab === 'calculator') {
+                calculatorTab.style.display = 'block';
+                analyzerTab.style.display = 'none';
+                tabButtons[0].classList.add('active');
+            } else {
+                calculatorTab.style.display = 'none';
+                analyzerTab.style.display = 'block';
+                tabButtons[1].classList.add('active');
+            }
+        }
+        
+        // MF Statement Analyzer
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n').filter(line => line.trim() !== '');
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            
+            const transactions = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+                const transaction = {};
+                headers.forEach((header, index) => {
+                    transaction[header] = values[index] || '';
+                });
+                transactions.push(transaction);
+            }
+            return { headers, transactions };
+        }
+        
+        function analyzeMFStatement() {
+            const fileInput = document.getElementById('csv-upload');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please upload a CSV file first!');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csvData = parseCSV(e.target.result);
+                    processTransactions(csvData.transactions);
+                } catch (error) {
+                    alert('Error parsing CSV file. Please check the format.');
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        function processTransactions(transactions) {
+            // Try to identify common column names (case insensitive)
+            const fundNameCols = ['fund name', 'scheme name', 'fund', 'scheme'];
+            const unitsCols = ['units', 'quantity', 'unit'];
+            const amountCols = ['amount', 'investment', 'value', 'price'];
+            const typeCols = ['type', 'transaction type', 'trxn type', 'status'];
+            const dateCols = ['date', 'transaction date', 'trxn date'];
+            
+            const findCol = (cols, headers) => {
+                return headers.find(h => cols.includes(h.toLowerCase()));
+            };
+            
+            const headers = Object.keys(transactions[0] || {});
+            const fundCol = findCol(fundNameCols, headers);
+            const unitsCol = findCol(unitsCols, headers);
+            const amountCol = findCol(amountCols, headers);
+            const typeCol = findCol(typeCols, headers);
+            const dateCol = findCol(dateCols, headers);
+            
+            if (!fundCol || !unitsCol) {
+                alert('Could not find required columns! Please ensure your CSV has Fund Name and Units.');
+                return;
+            }
+            
+            // Aggregate by fund
+            const fundPositions = {};
+            
+            transactions.forEach(tx => {
+                const fund = tx[fundCol];
+                if (!fund) return;
+                
+                if (!fundPositions[fund]) {
+                    fundPositions[fund] = {
+                        totalUnits: 0,
+                        totalBuy: 0,
+                        totalSell: 0,
+                        totalAmount: 0,
+                        transactions: []
+                    };
+                }
+                
+                let units = parseFloat(tx[unitsCol]) || 0;
+                let amount = parseFloat(tx[amountCol]) || 0;
+                let type = (tx[typeCol] || '').toLowerCase();
+                
+                // Determine if it's a buy or sell
+                if (type.includes('buy') || type.includes('purchase') || type.includes('sip') || units > 0) {
+                    fundPositions[fund].totalUnits += units;
+                    fundPositions[fund].totalBuy += units;
+                    fundPositions[fund].totalAmount += amount;
+                } else if (type.includes('sell') || type.includes('redeem') || type.includes('swp') || units < 0) {
+                    units = Math.abs(units);
+                    fundPositions[fund].totalUnits -= units;
+                    fundPositions[fund].totalSell += units;
+                    fundPositions[fund].totalAmount -= amount;
+                }
+                
+                fundPositions[fund].transactions.push({
+                    date: tx[dateCol] || '',
+                    type: type || 'N/A',
+                    units: units,
+                    amount: amount,
+                    fund: fund
+                });
+            });
+            
+            displayResults(fundPositions, transactions);
+        }
+        
+        function displayResults(fundPositions, transactions) {
+            const resultsSection = document.getElementById('mf-results');
+            const accumulatingDiv = document.getElementById('accumulating-funds');
+            const trimmingDiv = document.getElementById('trimming-funds');
+            const transactionsTable = document.getElementById('mf-transactions');
+            
+            resultsSection.style.display = 'block';
+            
+            // Separate into accumulating and trimming
+            const accumulating = [];
+            const trimming = [];
+            
+            Object.entries(fundPositions).forEach(([fund, data]) => {
+                const netUnits = data.totalBuy - data.totalSell;
+                if (netUnits > 0) {
+                    accumulating.push({ fund, ...data, netUnits });
+                } else if (netUnits < 0) {
+                    trimming.push({ fund, ...data, netUnits: Math.abs(netUnits) });
+                }
+            });
+            
+            // Display accumulating
+            accumulatingDiv.innerHTML = accumulating.length 
+                ? accumulating.map(f => `
+                    <div style="margin: 8px 0; padding: 8px 12px; background: white; border-radius: 8px;">
+                        <strong>${f.fund}</strong><br>
+                        <span style="color: #34c759;">+${f.netUnits.toFixed(2)} units net</span>
+                    </div>
+                `).join('')
+                : '<p style="color: #86868b;">No accumulating funds</p>';
+            
+            // Display trimming
+            trimmingDiv.innerHTML = trimming.length 
+                ? trimming.map(f => `
+                    <div style="margin: 8px 0; padding: 8px 12px; background: white; border-radius: 8px;">
+                        <strong>${f.fund}</strong><br>
+                        <span style="color: #ff3b30;">-${f.netUnits.toFixed(2)} units net</span>
+                    </div>
+                `).join('')
+                : '<p style="color: #86868b;">No trimming funds</p>';
+            
+            // Display transactions table
+            let tableHTML = `
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Fund</th>
+                        <th>Type</th>
+                        <th>Units</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+            
+            transactions.slice(0, 50).forEach(tx => {
+                tableHTML += `
+                    <tr>
+                        <td>${tx.date || 'N/A'}</td>
+                        <td>${tx.fund || tx['Fund Name'] || tx['Scheme Name'] || 'N/A'}</td>
+                        <td>${tx.type || tx['Type'] || tx['Transaction Type'] || 'N/A'}</td>
+                        <td>${tx.units || tx['Units'] || '0'}</td>
+                        <td>${tx.amount || tx['Amount'] || '0'}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += '</tbody>';
+            transactionsTable.innerHTML = tableHTML;
+        }
     </script>
 </body>
 </html>
