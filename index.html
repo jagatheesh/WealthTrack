@@ -1410,6 +1410,7 @@
                 if (!companyName || companyName.toLowerCase().includes('company')) return;
                 
                 const changes = [];
+                const monthValues = {};
                 let previousShares = null;
                 
                 // Process from oldest to newest month (reverse order)
@@ -1417,6 +1418,7 @@
                     const month = months[i];
                     const sharesStr = row[month.sharesHeader];
                     const shares = parseFloat(sharesStr) || 0;
+                    monthValues[month.key] = shares;
                     
                     if (previousShares !== null && previousShares !== 0) {
                         const change = shares - previousShares;
@@ -1446,6 +1448,7 @@
                     oldestShares: oldestShares,
                     totalChange: totalChange,
                     changes: changes,
+                    monthValues: monthValues,
                     trend: totalChange > 0 ? 'accumulating' : totalChange < 0 ? 'reducing' : 'stable'
                 });
             });
@@ -1472,33 +1475,47 @@
             const reducing = companyAnalysis.filter(c => c.trend === 'reducing');
             const stable = companyAnalysis.filter(c => c.trend === 'stable');
             
-            // Display accumulating
+            // Display accumulating with detailed month changes
             accumulatingDiv.innerHTML = accumulating.length 
                 ? `<strong style="color: #34c759; display: block; margin-bottom: 8px;">📈 Accumulating (${accumulating.length} stocks)</strong>` + accumulating.map(c => `
                     <div style="margin: 8px 0; padding: 10px 12px; background: white; border-radius: 8px;">
                         <strong>${c.company}</strong><br>
-                        <span style="color: #34c759;">+${c.totalChange.toLocaleString()} shares (${(c.totalChange / (c.oldestShares || 1)).toFixed(1)}%)</span>
+                        <span style="color: #34c759; font-weight: 600;">+${c.totalChange.toLocaleString()} shares (${(c.totalChange / (c.oldestShares || 1)).toFixed(1)}%)</span>
+                        <div style="margin-top: 6px; font-size: 12px; color: #666;">
+                            ${c.changes.map(change => `
+                                <span style="display: inline-block; margin-right: 12px; margin-bottom: 4px;">
+                                    <strong>${change.from} → ${change.to}:</strong> ${change.change > 0 ? '+' : ''}${change.change.toLocaleString()} (${change.pctChange.toFixed(1)}%)
+                                </span>
+                            `).join('')}
+                        </div>
                     </div>
                 `).join('')
                 : '<p style="color: #86868b;">No accumulating stocks</p>';
             
-            // Display reducing
+            // Display reducing with detailed month changes
             trimmingDiv.innerHTML = reducing.length 
                 ? `<strong style="color: #ff3b30; display: block; margin-bottom: 8px;">📉 Reducing (${reducing.length} stocks)</strong>` + reducing.map(c => `
                     <div style="margin: 8px 0; padding: 10px 12px; background: white; border-radius: 8px;">
                         <strong>${c.company}</strong><br>
-                        <span style="color: #ff3b30;">-${Math.abs(c.totalChange).toLocaleString()} shares (${(Math.abs(c.totalChange) / (c.oldestShares || 1)).toFixed(1)}%)</span>
+                        <span style="color: #ff3b30; font-weight: 600;">-${Math.abs(c.totalChange).toLocaleString()} shares (${(Math.abs(c.totalChange) / (c.oldestShares || 1)).toFixed(1)}%)</span>
+                        <div style="margin-top: 6px; font-size: 12px; color: #666;">
+                            ${c.changes.map(change => `
+                                <span style="display: inline-block; margin-right: 12px; margin-bottom: 4px;">
+                                    <strong>${change.from} → ${change.to}:</strong> ${change.change > 0 ? '+' : ''}${change.change.toLocaleString()} (${change.pctChange.toFixed(1)}%)
+                                </span>
+                            `).join('')}
+                        </div>
                     </div>
                 `).join('')
                 : '<p style="color: #86868b;">No reducing stocks</p>';
             
-            // Display holdings table
+            // Display detailed holdings table
             let tableHTML = `
                 <thead>
                     <tr>
                         <th>Company</th>
                         <th>Trend</th>
-                        <th>Latest Shares</th>
+                        ${months.map(m => `<th>${m.key} Shares</th>`).join('')}
                         <th>Change</th>
                     </tr>
                 </thead>
@@ -1514,8 +1531,8 @@
                     <tr>
                         <td>${c.company}</td>
                         <td style="color: ${trendColor}; font-weight: 600;">${trendIcon} ${c.trend}</td>
-                        <td>${c.latestShares.toLocaleString()}</td>
-                        <td style="color: ${trendColor};">${changeText}</td>
+                        ${months.map(m => `<td>${(c.monthValues[m.key] || 0).toLocaleString()}</td>`).join('')}
+                        <td style="color: ${trendColor}; font-weight: 600;">${changeText}</td>
                     </tr>
                 `;
             });
