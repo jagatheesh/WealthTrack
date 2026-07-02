@@ -1753,10 +1753,11 @@
                 `).join('')
                 : '<p style="color: #86868b;">No cumulative selling</p>';
             
-            // Detailed cumulative table
+            // Detailed cumulative table with expandable fund details
             let tableHTML = `
                 <thead>
                     <tr>
+                        <th style="width: 30px;"></th>
                         <th>Company</th>
                         <th>Trend</th>
                         ${months.map(m => `<th>${m.key} Shares</th>`).join('')}
@@ -1766,23 +1767,97 @@
                 <tbody>
             `;
             
-            analysis.forEach(c => {
+            analysis.forEach((c, idx) => {
                 const trendIcon = c.trend === 'accumulating' ? '📈' : c.trend === 'reducing' ? '📉' : '➖';
                 const trendColor = c.trend === 'accumulating' ? '#34c759' : c.trend === 'reducing' ? '#ff3b30' : '#86868b';
                 const changeText = c.totalChange > 0 ? `+${c.totalChange.toLocaleString()}` : c.totalChange < 0 ? `${c.totalChange.toLocaleString()}` : '0';
                 
+                // Calculate per-fund changes
+                const fundChanges = [];
+                Object.keys(c.fundDetails).forEach(fundName => {
+                    const fundData = c.fundDetails[fundName];
+                    const latest = fundData[months[0].key] || 0;
+                    const oldest = fundData[months[months.length - 1].key] || 0;
+                    const change = latest - oldest;
+                    if (change !== 0) {
+                        fundChanges.push({
+                            fundName,
+                            latest,
+                            oldest,
+                            change
+                        });
+                    }
+                });
+                
+                // Separate into buying and selling funds
+                const buyingFunds = fundChanges.filter(f => f.change > 0);
+                const sellingFunds = fundChanges.filter(f => f.change < 0);
+                
                 tableHTML += `
-                    <tr>
+                    <tr style="cursor: pointer;" onclick="toggleFundDetails(${idx})">
+                        <td style="font-weight: bold; font-size: 14px;">${fundChanges.length > 0 ? '▶' : ''}</td>
                         <td style="font-weight: 600;">${c.company}</td>
                         <td style="color: ${trendColor}; font-weight: 600;">${trendIcon} ${c.trend}</td>
                         ${months.map(m => `<td>${(c.cumulativeShares[m.key] || 0).toLocaleString()}</td>`).join('')}
                         <td style="color: ${trendColor}; font-weight: 600;">${changeText}</td>
                     </tr>
                 `;
+                
+                // Add expandable details row
+                if (fundChanges.length > 0) {
+                    tableHTML += `
+                        <tr id="fund-details-${idx}" style="display: none;">
+                            <td colspan="${months.length + 4}" style="background: #f9f9f9; padding: 15px;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                    ${buyingFunds.length > 0 ? `
+                                        <div>
+                                            <h4 style="color: #34c759; margin-bottom: 8px;">📈 Funds Accumulating:</h4>
+                                            ${buyingFunds.map(f => `
+                                                <div style="margin: 4px 0; padding: 6px; background: white; border-radius: 4px;">
+                                                    <strong>${f.fundName}</strong>: +${f.change.toLocaleString()} shares
+                                                    <div style="font-size: 10px; color: #666;">
+                                                        ${months[months.length-1].key}: ${f.oldest.toLocaleString()} → ${months[0].key}: ${f.latest.toLocaleString()}
+                                                    </div>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    ` : ''}
+                                    ${sellingFunds.length > 0 ? `
+                                        <div>
+                                            <h4 style="color: #ff3b30; margin-bottom: 8px;">📉 Funds Selling:</h4>
+                                            ${sellingFunds.map(f => `
+                                                <div style="margin: 4px 0; padding: 6px; background: white; border-radius: 4px;">
+                                                    <strong>${f.fundName}</strong>: -${Math.abs(f.change).toLocaleString()} shares
+                                                    <div style="font-size: 10px; color: #666;">
+                                                        ${months[months.length-1].key}: ${f.oldest.toLocaleString()} → ${months[0].key}: ${f.latest.toLocaleString()}
+                                                    </div>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
             });
             
             tableHTML += '</tbody>';
             transactionsTable.innerHTML = tableHTML;
+        }
+        
+        let expandedRows = new Set();
+        function toggleFundDetails(idx) {
+            const row = document.getElementById(`fund-details-${idx}`);
+            if (row) {
+                if (expandedRows.has(idx)) {
+                    row.style.display = 'none';
+                    expandedRows.delete(idx);
+                } else {
+                    row.style.display = 'table-row';
+                    expandedRows.add(idx);
+                }
+            }
         }
     </script>
 </body>
