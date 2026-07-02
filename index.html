@@ -402,6 +402,301 @@
         .summary-card.negative {
             border-left: 4px solid #ff3b30;
         }
+
+        .heatmap-panel {
+            background: #f5f5f7;
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid #e5e5ea;
+            margin-bottom: 28px;
+        }
+
+        .heatmap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .heatmap-header h3 {
+            margin: 0;
+            color: #1d1d1f;
+            font-size: 20px;
+        }
+
+        .heatmap-subtitle {
+            margin: 6px 0 0 0;
+            color: #6e6e73;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .heatmap-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: end;
+            margin-bottom: 18px;
+        }
+
+        .heatmap-control {
+            min-width: 180px;
+        }
+
+        .heatmap-control.search {
+            flex: 1;
+            min-width: 240px;
+        }
+
+        .heatmap-control label {
+            display: block;
+            margin-bottom: 8px;
+            color: #1d1d1f;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .heatmap-legend {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            color: #6e6e73;
+            font-size: 13px;
+        }
+
+        .heatmap-gradient {
+            flex: 1;
+            min-width: 180px;
+            height: 12px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, rgba(255, 59, 48, 0.85) 0%, rgba(255, 255, 255, 0.9) 50%, rgba(52, 199, 89, 0.85) 100%);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .heatmap-scroll {
+            overflow: auto;
+            border: 1px solid #e5e5ea;
+            border-radius: 14px;
+            background: white;
+        }
+
+        .heatmap-table {
+            width: 100%;
+            min-width: 900px;
+            margin-top: 0;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .heatmap-table th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: #fbfbfd;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            padding: 12px 10px;
+            text-align: center;
+        }
+
+        .heatmap-table th:first-child,
+        .heatmap-table td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 1;
+            background: white;
+        }
+
+        .heatmap-table th:first-child {
+            z-index: 3;
+            text-align: left;
+            min-width: 220px;
+        }
+
+        .heatmap-stock {
+            min-width: 220px;
+            font-weight: 600;
+            background: white;
+        }
+
+        .heatmap-stock button {
+            background: none;
+            border: none;
+            padding: 0;
+            color: #1d1d1f;
+            font: inherit;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .heatmap-stock button:hover {
+            color: #007aff;
+        }
+
+        .heatmap-row-selected td,
+        .heatmap-row-selected .heatmap-stock,
+        .heatmap-row-selected .heatmap-stock button {
+            background: #eef5ff;
+        }
+
+        .heatmap-cell,
+        .heatmap-net {
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            min-width: 88px;
+            padding: 0;
+        }
+
+        .heatmap-cell button,
+        .heatmap-net button {
+            display: block;
+            width: 100%;
+            min-height: 56px;
+            border: none;
+            background: transparent;
+            color: #1d1d1f;
+            font: inherit;
+            cursor: pointer;
+            padding: 10px 8px;
+        }
+
+        .heatmap-cell button:hover,
+        .heatmap-net button:hover {
+            outline: 2px solid rgba(0, 122, 255, 0.25);
+            outline-offset: -2px;
+        }
+
+        .heatmap-value {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .heatmap-meta {
+            display: block;
+            font-size: 10px;
+            color: rgba(29, 29, 31, 0.72);
+            margin-top: 4px;
+        }
+
+        .heatmap-detail {
+            margin-top: 18px;
+            padding: 18px;
+            border-radius: 14px;
+            border: 1px solid #e5e5ea;
+            background: white;
+        }
+
+        .heatmap-detail.empty {
+            color: #6e6e73;
+        }
+
+        .heatmap-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .heatmap-detail-title {
+            margin: 0;
+            color: #1d1d1f;
+            font-size: 18px;
+        }
+
+        .heatmap-detail-copy {
+            margin: 4px 0 0 0;
+            color: #6e6e73;
+            font-size: 13px;
+        }
+
+        .heatmap-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 14px;
+        }
+
+        .detail-card {
+            background: #f5f5f7;
+            border: 1px solid #e5e5ea;
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .detail-card h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+
+        .detail-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e5ea;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .detail-kicker {
+            display: block;
+            color: #6e6e73;
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        .sparkline-card {
+            grid-column: 1 / -1;
+        }
+
+        .sparkline-wrap {
+            margin-top: 10px;
+            padding: 12px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e5e5ea;
+        }
+
+        .sparkline-labels {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 8px;
+            color: #6e6e73;
+            font-size: 11px;
+        }
+
+        .sparkline-values {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 6px;
+            color: #1d1d1f;
+            font-size: 11px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .insight-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            background: #f5f5f7;
+            color: #1d1d1f;
+            border: 1px solid #e5e5ea;
+            white-space: nowrap;
+        }
         
         @media (max-width: 768px) {
             .container {
@@ -417,6 +712,15 @@
             }
             
             .position-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .heatmap-header,
+            .heatmap-detail-header {
+                flex-direction: column;
+            }
+
+            .heatmap-detail-grid {
                 grid-template-columns: 1fr;
             }
             
@@ -553,6 +857,55 @@
                         <div id="trimming-funds"></div>
                     </div>
                 </div>
+
+                <div class="heatmap-panel" id="heatmap-panel" style="display: none;">
+                    <div class="heatmap-header">
+                        <div>
+                            <h3>Stock vs Fund Heatmap</h3>
+                            <p class="heatmap-subtitle">Overview first, then filter and click into a specific stock to inspect which funds are building or trimming positions.</p>
+                        </div>
+                        <div class="insight-badge" id="heatmap-summary-badge">Ready</div>
+                    </div>
+
+                    <div class="heatmap-controls">
+                        <div class="heatmap-control">
+                            <label for="heatmap-filter">View</label>
+                            <select id="heatmap-filter">
+                                <option value="all">All Signals</option>
+                                <option value="accumulating">Net Accumulating</option>
+                                <option value="reducing">Net Selling</option>
+                                <option value="mixed">Mixed Fund Activity</option>
+                            </select>
+                        </div>
+                        <div class="heatmap-control">
+                            <label for="heatmap-topn">Rows</label>
+                            <select id="heatmap-topn">
+                                <option value="15">Top 15</option>
+                                <option value="25" selected>Top 25</option>
+                                <option value="40">Top 40</option>
+                                <option value="9999">All Stocks</option>
+                            </select>
+                        </div>
+                        <div class="heatmap-control search">
+                            <label for="heatmap-search">Search Stock</label>
+                            <input type="text" id="heatmap-search" placeholder="Type a stock name">
+                        </div>
+                    </div>
+
+                    <div class="heatmap-legend">
+                        <span>Net Selling</span>
+                        <div class="heatmap-gradient"></div>
+                        <span>Net Accumulating</span>
+                    </div>
+
+                    <div class="heatmap-scroll">
+                        <div id="mf-heatmap"></div>
+                    </div>
+
+                    <div class="heatmap-detail empty" id="heatmap-detail">
+                        Select a stock or heatmap cell to inspect which mutual funds are accumulating or selling that name.
+                    </div>
+                </div>
                 
                 <h3>Detailed Transaction History</h3>
                 <table id="mf-transactions">
@@ -565,6 +918,8 @@
         let chart;
         let customVariables = [];
         let variableIdCounter = 0;
+        let currentCumulativeState = null;
+        let selectedHeatmapRowId = null;
         
         function addCustomVariable() {
             variableIdCounter++;
@@ -1115,9 +1470,17 @@
         
         function clearFiles() {
             uploadedFiles = [];
+            currentCumulativeState = null;
+            selectedHeatmapRowId = null;
             document.getElementById('csv-upload').value = '';
             document.getElementById('file-list').innerHTML = '';
+            document.getElementById('heatmap-search').value = '';
+            document.getElementById('heatmap-filter').value = 'all';
+            document.getElementById('heatmap-topn').value = '25';
             document.getElementById('mf-results').style.display = 'none';
+            document.getElementById('heatmap-panel').style.display = 'none';
+            document.getElementById('mf-heatmap').innerHTML = '';
+            showHeatmapStockDetail(null);
         }
         
         function parseCSV(csvText) {
@@ -1467,6 +1830,9 @@
             const transactionsTable = document.getElementById('mf-transactions');
             
             resultsSection.style.display = 'block';
+            currentCumulativeState = null;
+            selectedHeatmapRowId = null;
+            document.getElementById('heatmap-panel').style.display = 'none';
             
             // Update section headers
             const resultsHeader = resultsSection.querySelector('h3');
@@ -1552,6 +1918,9 @@
             const transactionsTable = document.getElementById('mf-transactions');
             
             resultsSection.style.display = 'block';
+            currentCumulativeState = null;
+            selectedHeatmapRowId = null;
+            document.getElementById('heatmap-panel').style.display = 'none';
             
             // Separate into accumulating and trimming
             const accumulating = [];
@@ -1691,6 +2060,16 @@
                         changes.push({ from, to, change, pctChange });
                     }
                 }
+
+                const fundChanges = Object.entries(c.funds).map(([fundName, fundData]) => {
+                    const latest = fundData[latestMonth.key] || 0;
+                    const oldest = fundData[oldestMonth.key] || 0;
+                    const change = latest - oldest;
+                    return { fundName, latest, oldest, change };
+                }).filter(fund => fund.change !== 0);
+
+                const buyingFunds = fundChanges.filter(fund => fund.change > 0);
+                const sellingFunds = fundChanges.filter(fund => fund.change < 0);
                 
                 analysis.push({
                     company: c.company,
@@ -1700,12 +2079,19 @@
                     oldestShares,
                     totalChange,
                     changes,
+                    fundChanges,
+                    buyingFunds,
+                    sellingFunds,
+                    mixedSignal: buyingFunds.length > 0 && sellingFunds.length > 0,
                     trend: totalChange > 0 ? 'accumulating' : totalChange < 0 ? 'reducing' : 'stable'
                 });
             });
             
             // Sort by absolute total change (biggest first)
             analysis.sort((a, b) => Math.abs(b.totalChange) - Math.abs(a.totalChange));
+            analysis.forEach((item, index) => {
+                item.rowId = index;
+            });
             
             displayCumulativeAnalysis(analysis, months, allFundData);
         }
@@ -1715,8 +2101,11 @@
             const accumulatingDiv = document.getElementById('accumulating-funds');
             const trimmingDiv = document.getElementById('trimming-funds');
             const transactionsTable = document.getElementById('mf-transactions');
+            const heatmapPanel = document.getElementById('heatmap-panel');
             
             resultsSection.style.display = 'block';
+            heatmapPanel.style.display = 'block';
+            currentCumulativeState = { analysis, months, allFundData };
             
             // Update section header
             const resultsHeader = resultsSection.querySelector('h3');
@@ -1752,6 +2141,10 @@
                     </div>
                 `).join('')
                 : '<p style="color: #86868b;">No cumulative selling</p>';
+
+            selectedHeatmapRowId = analysis[0] ? analysis[0].rowId : null;
+            renderCumulativeHeatmap();
+            showHeatmapStockDetail(analysis[0] ? analysis[0].rowId : null);
             
             // Detailed cumulative table with expandable fund details
             let tableHTML = `
@@ -1767,35 +2160,14 @@
                 <tbody>
             `;
             
-            analysis.forEach((c, idx) => {
+            analysis.forEach((c) => {
                 const trendIcon = c.trend === 'accumulating' ? '📈' : c.trend === 'reducing' ? '📉' : '➖';
                 const trendColor = c.trend === 'accumulating' ? '#34c759' : c.trend === 'reducing' ? '#ff3b30' : '#86868b';
                 const changeText = c.totalChange > 0 ? `+${c.totalChange.toLocaleString()}` : c.totalChange < 0 ? `${c.totalChange.toLocaleString()}` : '0';
                 
-                // Calculate per-fund changes
-                const fundChanges = [];
-                Object.keys(c.fundDetails).forEach(fundName => {
-                    const fundData = c.fundDetails[fundName];
-                    const latest = fundData[months[0].key] || 0;
-                    const oldest = fundData[months[months.length - 1].key] || 0;
-                    const change = latest - oldest;
-                    if (change !== 0) {
-                        fundChanges.push({
-                            fundName,
-                            latest,
-                            oldest,
-                            change
-                        });
-                    }
-                });
-                
-                // Separate into buying and selling funds
-                const buyingFunds = fundChanges.filter(f => f.change > 0);
-                const sellingFunds = fundChanges.filter(f => f.change < 0);
-                
                 tableHTML += `
-                    <tr style="cursor: pointer;" onclick="toggleFundDetails(${idx})">
-                        <td style="font-weight: bold; font-size: 14px;">${fundChanges.length > 0 ? '▶' : ''}</td>
+                    <tr id="detail-row-${c.rowId}" style="cursor: pointer;" onclick="toggleFundDetails(${c.rowId}); selectHeatmapStock(${c.rowId})">
+                        <td style="font-weight: bold; font-size: 14px;">${c.fundChanges.length > 0 ? '▶' : ''}</td>
                         <td style="font-weight: 600;">${c.company}</td>
                         <td style="color: ${trendColor}; font-weight: 600;">${trendIcon} ${c.trend}</td>
                         ${months.map(m => `<td>${(c.cumulativeShares[m.key] || 0).toLocaleString()}</td>`).join('')}
@@ -1804,15 +2176,15 @@
                 `;
                 
                 // Add expandable details row
-                if (fundChanges.length > 0) {
+                if (c.fundChanges.length > 0) {
                     tableHTML += `
-                        <tr id="fund-details-${idx}" style="display: none;">
+                        <tr id="fund-details-${c.rowId}" style="display: none;">
                             <td colspan="${months.length + 4}" style="background: #f9f9f9; padding: 15px;">
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                                    ${buyingFunds.length > 0 ? `
+                                    ${c.buyingFunds.length > 0 ? `
                                         <div>
                                             <h4 style="color: #34c759; margin-bottom: 8px;">📈 Funds Accumulating:</h4>
-                                            ${buyingFunds.map(f => `
+                                            ${c.buyingFunds.map(f => `
                                                 <div style="margin: 4px 0; padding: 6px; background: white; border-radius: 4px;">
                                                     <strong>${f.fundName}</strong>: +${f.change.toLocaleString()} shares
                                                     <div style="font-size: 10px; color: #666;">
@@ -1822,10 +2194,10 @@
                                             `).join('')}
                                         </div>
                                     ` : ''}
-                                    ${sellingFunds.length > 0 ? `
+                                    ${c.sellingFunds.length > 0 ? `
                                         <div>
                                             <h4 style="color: #ff3b30; margin-bottom: 8px;">📉 Funds Selling:</h4>
-                                            ${sellingFunds.map(f => `
+                                            ${c.sellingFunds.map(f => `
                                                 <div style="margin: 4px 0; padding: 6px; background: white; border-radius: 4px;">
                                                     <strong>${f.fundName}</strong>: -${Math.abs(f.change).toLocaleString()} shares
                                                     <div style="font-size: 10px; color: #666;">
@@ -1845,6 +2217,266 @@
             tableHTML += '</tbody>';
             transactionsTable.innerHTML = tableHTML;
         }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function shortFundName(name) {
+            return name
+                .replace(/\.csv$/i, '')
+                .replace(/[-_]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function abbreviatedFundName(name) {
+            const cleaned = shortFundName(name)
+                .replace(/\b(direct|regular|growth|plan|fund|equity|holdings|cap)\b/gi, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            const words = cleaned.split(' ').filter(Boolean);
+            if (words.length >= 2) {
+                const initials = words.slice(0, 3).map(word => word[0].toUpperCase()).join('');
+                if (initials.length >= 2) return initials;
+            }
+
+            return cleaned.slice(0, 10) || shortFundName(name).slice(0, 10);
+        }
+
+        function formatSignedShares(value) {
+            if (value > 0) return `+${value.toLocaleString()}`;
+            if (value < 0) return `-${Math.abs(value).toLocaleString()}`;
+            return '0';
+        }
+
+        function getHeatmapCellColor(value, maxAbs) {
+            if (!maxAbs || value === 0) {
+                return 'rgba(255, 255, 255, 0.98)';
+            }
+
+            const ratio = Math.min(Math.abs(value) / maxAbs, 1);
+            const alpha = 0.16 + (ratio * 0.68);
+            return value > 0
+                ? `rgba(52, 199, 89, ${alpha.toFixed(3)})`
+                : `rgba(255, 59, 48, ${alpha.toFixed(3)})`;
+        }
+
+        function buildSparkline(values, color) {
+            const width = 520;
+            const height = 90;
+            const padding = 12;
+            const max = Math.max(...values);
+            const min = Math.min(...values);
+            const range = max - min || 1;
+            const step = values.length > 1 ? (width - padding * 2) / (values.length - 1) : 0;
+
+            const points = values.map((value, index) => {
+                const x = padding + (index * step);
+                const y = height - padding - (((value - min) / range) * (height - padding * 2));
+                return `${x},${y}`;
+            }).join(' ');
+
+            return `
+                <svg viewBox="0 0 ${width} ${height}" width="100%" height="${height}" role="img" aria-label="Position trend">
+                    <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="rgba(0,0,0,0.08)" stroke-width="1" />
+                    <polyline fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="${points}" />
+                    ${values.map((value, index) => {
+                        const x = padding + (index * step);
+                        const y = height - padding - (((value - min) / range) * (height - padding * 2));
+                        return `<circle cx="${x}" cy="${y}" r="3.5" fill="${color}" />`;
+                    }).join('')}
+                </svg>
+            `;
+        }
+
+        function focusDetailedRow(rowId) {
+            const row = document.getElementById(`detail-row-${rowId}`);
+            if (!row) return;
+
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function renderCumulativeHeatmap() {
+            if (!currentCumulativeState) return;
+
+            const { analysis, months, allFundData } = currentCumulativeState;
+            const container = document.getElementById('mf-heatmap');
+            const filter = document.getElementById('heatmap-filter').value;
+            const topN = parseInt(document.getElementById('heatmap-topn').value, 10);
+            const search = document.getElementById('heatmap-search').value.trim().toLowerCase();
+            const summaryBadge = document.getElementById('heatmap-summary-badge');
+
+            let filtered = analysis.filter(stock => {
+                if (filter === 'accumulating') return stock.trend === 'accumulating';
+                if (filter === 'reducing') return stock.trend === 'reducing';
+                if (filter === 'mixed') return stock.mixedSignal;
+                return true;
+            });
+
+            if (search) {
+                filtered = filtered.filter(stock => stock.company.toLowerCase().includes(search));
+            }
+
+            filtered = filtered.slice(0, topN);
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="padding: 24px; color: #6e6e73;">No stocks match the current heatmap filter.</div>';
+                summaryBadge.textContent = 'No rows';
+                showHeatmapStockDetail(null);
+                return;
+            }
+
+            if (!filtered.some(stock => stock.rowId === selectedHeatmapRowId)) {
+                selectedHeatmapRowId = filtered[0].rowId;
+            }
+
+            const fundNames = allFundData.map(fund => ({
+                short: shortFundName(fund.fundName),
+                label: abbreviatedFundName(fund.fundName),
+                full: fund.fundName
+            }));
+            const maxAbs = Math.max(
+                ...filtered.flatMap(stock => [
+                    Math.abs(stock.totalChange),
+                    ...stock.fundChanges.map(fund => Math.abs(fund.change))
+                ]),
+                1
+            );
+
+            summaryBadge.textContent = `${filtered.length} stocks x ${fundNames.length} funds`;
+
+            let html = '<table class="heatmap-table"><thead><tr>';
+            html += '<th>Stock</th>';
+            fundNames.forEach(fund => {
+                html += `<th title="${escapeHtml(fund.short)}">${escapeHtml(fund.label)}</th>`;
+            });
+            html += '<th>Net Net</th>';
+            html += '</tr></thead><tbody>';
+
+            filtered.forEach(stock => {
+                const selectedClass = selectedHeatmapRowId === stock.rowId ? 'heatmap-row-selected' : '';
+                html += `<tr class="${selectedClass}" id="heatmap-row-${stock.rowId}">`;
+                html += `
+                    <td class="heatmap-stock">
+                        <button onclick="selectHeatmapStock(${stock.rowId}, true)">
+                            ${escapeHtml(stock.company)}
+                        </button>
+                    </td>
+                `;
+
+                allFundData.forEach(fund => {
+                    const fundName = fund.fundName;
+                    const latest = (stock.fundDetails[fundName] && stock.fundDetails[fundName][months[0].key]) || 0;
+                    const oldest = (stock.fundDetails[fundName] && stock.fundDetails[fundName][months[months.length - 1].key]) || 0;
+                    const change = latest - oldest;
+                    const title = `${stock.company}\n${shortFundName(fundName)}\n${months[months.length - 1].key}: ${oldest.toLocaleString()} shares\n${months[0].key}: ${latest.toLocaleString()} shares\nNet: ${formatSignedShares(change)} shares`;
+
+                    html += `
+                        <td class="heatmap-cell" style="background: ${getHeatmapCellColor(change, maxAbs)};">
+                            <button title="${escapeHtml(title)}" onclick="selectHeatmapStock(${stock.rowId}, false, '${encodeURIComponent(fundName)}')">
+                                <span class="heatmap-value">${formatSignedShares(change)}</span>
+                                <span class="heatmap-meta">${latest ? latest.toLocaleString() : '0'}</span>
+                            </button>
+                        </td>
+                    `;
+                });
+
+                html += `
+                    <td class="heatmap-net" style="background: ${getHeatmapCellColor(stock.totalChange, maxAbs)};">
+                        <button title="${escapeHtml(`${stock.company}\nNet across all funds: ${formatSignedShares(stock.totalChange)} shares`)}" onclick="selectHeatmapStock(${stock.rowId})">
+                            <span class="heatmap-value">${formatSignedShares(stock.totalChange)}</span>
+                            <span class="heatmap-meta">${stock.mixedSignal ? 'Mixed' : stock.trend}</span>
+                        </button>
+                    </td>
+                `;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function showHeatmapStockDetail(rowId, highlightedFundEncoded) {
+            const detail = document.getElementById('heatmap-detail');
+            if (!currentCumulativeState || rowId === null || rowId === undefined) {
+                detail.className = 'heatmap-detail empty';
+                detail.textContent = 'Select a stock or heatmap cell to inspect which mutual funds are accumulating or selling that name.';
+                return;
+            }
+
+            const { analysis, months } = currentCumulativeState;
+            const stock = analysis.find(item => item.rowId === rowId);
+            if (!stock) return;
+
+            const highlightedFund = highlightedFundEncoded ? decodeURIComponent(highlightedFundEncoded) : null;
+            const insight = stock.mixedSignal ? 'Mixed participation' : stock.trend === 'accumulating' ? 'Broad accumulation' : stock.trend === 'reducing' ? 'Broad selling' : 'Flat';
+            const sparklineValues = months.map(month => stock.cumulativeShares[month.key] || 0).reverse();
+            const sparklineLabels = months.map(month => month.key).reverse();
+            const sparklineColor = stock.totalChange >= 0 ? '#34c759' : '#ff3b30';
+
+            const buildItems = (funds, color) => {
+                if (funds.length === 0) {
+                    return '<div class="detail-item">None in this direction over the selected period.</div>';
+                }
+
+                return funds.map(fund => {
+                    const isHighlighted = highlightedFund === fund.fundName;
+                    return `
+                        <div class="detail-item" style="${isHighlighted ? 'background: rgba(0, 122, 255, 0.06); border-radius: 8px; padding: 8px 10px;' : ''}">
+                            <strong style="color: ${color};">${escapeHtml(shortFundName(fund.fundName))}</strong> ${formatSignedShares(fund.change)} shares
+                            <span class="detail-kicker">${months[months.length - 1].key}: ${fund.oldest.toLocaleString()} -> ${months[0].key}: ${fund.latest.toLocaleString()}</span>
+                        </div>
+                    `;
+                }).join('');
+            };
+
+            detail.className = 'heatmap-detail';
+            detail.innerHTML = `
+                <div class="heatmap-detail-header">
+                    <div>
+                        <h4 class="heatmap-detail-title">${escapeHtml(stock.company)}</h4>
+                        <p class="heatmap-detail-copy">Net net across all uploaded funds: <strong>${formatSignedShares(stock.totalChange)}</strong> shares. Signal: <strong>${escapeHtml(insight)}</strong>.</p>
+                    </div>
+                    <div class="insight-badge">${stock.buyingFunds.length} buying funds / ${stock.sellingFunds.length} selling funds</div>
+                </div>
+                <div class="heatmap-detail-grid">
+                    <div class="detail-card">
+                        <h4 style="color: #34c759;">Funds Accumulating</h4>
+                        ${buildItems(stock.buyingFunds, '#34c759')}
+                    </div>
+                    <div class="detail-card">
+                        <h4 style="color: #ff3b30;">Funds Selling</h4>
+                        ${buildItems(stock.sellingFunds, '#ff3b30')}
+                    </div>
+                    <div class="detail-card sparkline-card">
+                        <h4>Total Position Path</h4>
+                        <div class="sparkline-wrap">
+                            ${buildSparkline(sparklineValues, sparklineColor)}
+                            <div class="sparkline-labels">${sparklineLabels.map(label => `<span>${escapeHtml(label)}</span>`).join('')}</div>
+                            <div class="sparkline-values">${sparklineValues.map(value => `<span>${value.toLocaleString()}</span>`).join('')}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectHeatmapStock(rowId, toggleDetails = false, highlightedFundEncoded) {
+            selectedHeatmapRowId = rowId;
+            renderCumulativeHeatmap();
+            showHeatmapStockDetail(rowId, highlightedFundEncoded);
+            focusDetailedRow(rowId);
+
+            if (toggleDetails) {
+                toggleFundDetails(rowId);
+            }
+        }
         
         let expandedRows = new Set();
         function toggleFundDetails(idx) {
@@ -1859,6 +2491,10 @@
                 }
             }
         }
+
+        document.getElementById('heatmap-filter').addEventListener('change', renderCumulativeHeatmap);
+        document.getElementById('heatmap-topn').addEventListener('change', renderCumulativeHeatmap);
+        document.getElementById('heatmap-search').addEventListener('input', renderCumulativeHeatmap);
     </script>
 </body>
 </html>
