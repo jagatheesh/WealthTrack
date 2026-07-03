@@ -403,6 +403,118 @@
             border-left: 4px solid #ff3b30;
         }
 
+        .fund-discovery-section {
+            background: #f5f5f7;
+            padding: 28px;
+            border-radius: 16px;
+            border: 1px solid #e5e5ea;
+        }
+
+        .fund-discovery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .fund-discovery-header h2 {
+            margin: 0;
+            color: #1d1d1f;
+            font-size: 24px;
+        }
+
+        .fund-discovery-copy {
+            margin: 8px 0 0 0;
+            color: #6e6e73;
+            font-size: 14px;
+            line-height: 1.6;
+            max-width: 720px;
+        }
+
+        .fetch-status {
+            margin-top: 14px;
+            color: #6e6e73;
+            font-size: 14px;
+        }
+
+        .fund-category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 18px;
+            margin-top: 24px;
+        }
+
+        .fund-category-card {
+            background: white;
+            border: 1px solid #e5e5ea;
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+        }
+
+        .fund-category-card h3 {
+            margin: 0 0 12px 0;
+            color: #1d1d1f;
+            font-size: 18px;
+        }
+
+        .fund-category-card table {
+            margin-top: 0;
+            box-shadow: none;
+            border-radius: 12px;
+            border: 1px solid #e5e5ea;
+        }
+
+        .fund-category-card th,
+        .fund-category-card td {
+            padding: 10px 12px;
+            font-size: 13px;
+        }
+
+        .fund-rank {
+            color: #6e6e73;
+            font-weight: 700;
+            width: 28px;
+        }
+
+        .fund-name {
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+
+        .fund-meta {
+            display: block;
+            margin-top: 4px;
+            color: #6e6e73;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .fund-aum {
+            font-weight: 700;
+            color: #1d1d1f;
+            white-space: nowrap;
+        }
+
+        .fund-nav {
+            color: #007aff;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .inline-note {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #e5e5ea;
+            border-radius: 999px;
+            color: #1d1d1f;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
         .heatmap-panel {
             background: #f5f5f7;
             padding: 24px;
@@ -715,6 +827,10 @@
                 grid-template-columns: 1fr;
             }
 
+            .fund-discovery-header {
+                flex-direction: column;
+            }
+
             .heatmap-header,
             .heatmap-detail-header {
                 flex-direction: column;
@@ -739,6 +855,7 @@
         <div class="tab-container">
             <button class="tab-btn active" onclick="switchTab('calculator')">SIP Calculator</button>
             <button class="tab-btn" onclick="switchTab('analyzer')">MF Position Analyzer</button>
+            <button class="tab-btn" onclick="switchTab('top-funds')">Top Equity Funds</button>
         </div>
         
         <div id="calculator-tab" class="tab-content">
@@ -912,6 +1029,22 @@
                 </table>
             </div>
         </div>
+
+        <div id="top-funds-tab" class="tab-content" style="display: none;">
+            <div class="fund-discovery-section">
+                <div class="fund-discovery-header">
+                    <div>
+                        <h2>Top Equity Funds By AUM</h2>
+                        <p class="fund-discovery-copy">Fetch the top 5 equity mutual funds in each category such as Large Cap, Mid Cap, Flexi Cap and Multi Cap. Rankings are based on AMFI AAUM data, with MFAPI used to enrich shortlisted funds with latest NAV and scheme metadata.</p>
+                    </div>
+                    <div class="inline-note">Top 5 by AUM</div>
+                </div>
+
+                <button class="calculate-btn" onclick="loadTopEquityFunds()">Fetch Top Equity Funds</button>
+                <div id="top-funds-status" class="fetch-status">Ready to fetch the latest category leaders.</div>
+                <div id="top-funds-results" class="fund-category-grid"></div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -920,6 +1053,7 @@
         let variableIdCounter = 0;
         let currentCumulativeState = null;
         let selectedHeatmapRowId = null;
+        let topFundsLoaded = false;
         
         function addCustomVariable() {
             variableIdCounter++;
@@ -1435,6 +1569,7 @@
         function switchTab(tab) {
             const calculatorTab = document.getElementById('calculator-tab');
             const analyzerTab = document.getElementById('analyzer-tab');
+            const topFundsTab = document.getElementById('top-funds-tab');
             const tabButtons = document.querySelectorAll('.tab-btn');
             
             tabButtons.forEach(btn => btn.classList.remove('active'));
@@ -1442,11 +1577,97 @@
             if (tab === 'calculator') {
                 calculatorTab.style.display = 'block';
                 analyzerTab.style.display = 'none';
+                topFundsTab.style.display = 'none';
                 tabButtons[0].classList.add('active');
-            } else {
+            } else if (tab === 'analyzer') {
                 calculatorTab.style.display = 'none';
                 analyzerTab.style.display = 'block';
+                topFundsTab.style.display = 'none';
                 tabButtons[1].classList.add('active');
+            } else {
+                calculatorTab.style.display = 'none';
+                analyzerTab.style.display = 'none';
+                topFundsTab.style.display = 'block';
+                tabButtons[2].classList.add('active');
+                if (!topFundsLoaded) {
+                    loadTopEquityFunds();
+                }
+            }
+        }
+
+        function formatCrores(value) {
+            return `₹${value.toLocaleString(undefined, { maximumFractionDigits: 0 })} Cr`;
+        }
+
+        function renderTopEquityFunds(data) {
+            const container = document.getElementById('top-funds-results');
+            const status = document.getElementById('top-funds-status');
+
+            if (!data || !data.orderedCategories || data.orderedCategories.length === 0) {
+                container.innerHTML = '';
+                status.textContent = 'No equity fund categories were returned.';
+                return;
+            }
+
+            status.textContent = `Updated ${new Date(data.generatedAt).toLocaleString()} using AMFI AUM and MFAPI enrichment.`;
+
+            container.innerHTML = data.orderedCategories.map(category => {
+                const funds = data.categories[category] || [];
+                const rows = funds.map((fund, index) => `
+                    <tr>
+                        <td class="fund-rank">#${index + 1}</td>
+                        <td>
+                            <span class="fund-name">${fund.mfapiSchemeName || fund.displayName}</span>
+                            <span class="fund-meta">${fund.fundHouse || 'Fund house unavailable'}${fund.schemeCode ? ` • Code ${fund.schemeCode}` : ''}</span>
+                        </td>
+                        <td class="fund-aum">${formatCrores(fund.aumCrores)}</td>
+                        <td class="fund-nav">${fund.latestNav ? `₹${fund.latestNav}` : 'NA'}</td>
+                    </tr>
+                `).join('');
+
+                return `
+                    <div class="fund-category-card">
+                        <h3>${category}</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Fund</th>
+                                    <th>AUM</th>
+                                    <th>Latest NAV</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function loadTopEquityFunds() {
+            const status = document.getElementById('top-funds-status');
+            const container = document.getElementById('top-funds-results');
+
+            status.textContent = 'Fetching category leaders... this can take a few seconds.';
+            if (!topFundsLoaded) {
+                container.innerHTML = '';
+            }
+
+            try {
+                const response = await fetch('/.netlify/functions/top-equity-funds');
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || data.error || 'Unable to fetch top funds.');
+                }
+
+                topFundsLoaded = true;
+                renderTopEquityFunds(data);
+            } catch (error) {
+                status.textContent = `Unable to fetch top funds right now. ${error.message}`;
+                if (!topFundsLoaded) {
+                    container.innerHTML = '';
+                }
             }
         }
         
