@@ -1599,6 +1599,21 @@
             return `₹${value.toLocaleString(undefined, { maximumFractionDigits: 0 })} Cr`;
         }
 
+        function getTopFundsEndpoints() {
+            const relativeEndpoint = '/.netlify/functions/top-equity-funds';
+            const productionEndpoint = 'https://snowballer.netlify.app/.netlify/functions/top-equity-funds';
+
+            if (window.location.protocol === 'file:') {
+                return [productionEndpoint];
+            }
+
+            if (window.location.hostname === 'snowballer.netlify.app') {
+                return [relativeEndpoint];
+            }
+
+            return [relativeEndpoint, productionEndpoint];
+        }
+
         function renderTopEquityFunds(data) {
             const container = document.getElementById('top-funds-results');
             const status = document.getElementById('top-funds-status');
@@ -1654,11 +1669,27 @@
             }
 
             try {
-                const response = await fetch('/.netlify/functions/top-equity-funds');
-                const data = await response.json();
+                let response;
+                let data;
+                let lastError = null;
 
-                if (!response.ok) {
-                    throw new Error(data.detail || data.error || 'Unable to fetch top funds.');
+                for (const endpoint of getTopFundsEndpoints()) {
+                    try {
+                        response = await fetch(endpoint);
+                        data = await response.json();
+
+                        if (!response.ok) {
+                            throw new Error(data.detail || data.error || 'Unable to fetch top funds.');
+                        }
+
+                        break;
+                    } catch (error) {
+                        lastError = error;
+                    }
+                }
+
+                if (!response || !response.ok) {
+                    throw lastError || new Error('Unable to fetch top funds.');
                 }
 
                 topFundsLoaded = true;

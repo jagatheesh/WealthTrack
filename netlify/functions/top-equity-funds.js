@@ -1,5 +1,12 @@
 const MFAPI_BASE = "https://api.mfapi.in";
 const AMFI_BASE = "https://portal.amfiindia.com";
+const DEFAULT_HEADERS = {
+  "content-type": "application/json; charset=utf-8",
+  "cache-control": "public, max-age=1800",
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "GET, OPTIONS",
+  "access-control-allow-headers": "content-type"
+};
 
 const EQUITY_CATEGORY_PATTERNS = [
   ["Large & Mid Cap Fund", /large\s*(?:&|and)\s*mid cap fund/i],
@@ -218,7 +225,15 @@ async function enrichWithMfapi(entry) {
   }
 }
 
-exports.handler = async function handler() {
+exports.handler = async function handler(event) {
+  if (typeof event !== "undefined" && event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 204,
+      headers: DEFAULT_HEADERS,
+      body: ""
+    };
+  }
+
   try {
     const indexHtml = await fetchText(`${AMFI_BASE}/rssShowFeeds.aspx`);
     const fundHouseFeeds = parseFundHouseFeedIndex(indexHtml);
@@ -302,10 +317,7 @@ exports.handler = async function handler() {
 
     return {
       statusCode: 200,
-      headers: {
-        "content-type": "application/json; charset=utf-8",
-        "cache-control": "public, max-age=1800"
-      },
+      headers: DEFAULT_HEADERS,
       body: JSON.stringify({
         generatedAt: new Date().toISOString(),
         source: {
@@ -319,9 +331,7 @@ exports.handler = async function handler() {
   } catch (error) {
     return {
       statusCode: 500,
-      headers: {
-        "content-type": "application/json; charset=utf-8"
-      },
+      headers: DEFAULT_HEADERS,
       body: JSON.stringify({
         error: "Unable to build top equity fund list right now.",
         detail: error.message
