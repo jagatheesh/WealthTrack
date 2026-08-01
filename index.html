@@ -404,115 +404,229 @@
         }
 
         .fund-discovery-section {
-            background: #f5f5f7;
-            padding: 28px;
-            border-radius: 16px;
-            border: 1px solid #e5e5ea;
+            padding: 8px 0 0;
         }
 
-        .fund-discovery-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 16px;
-            margin-bottom: 20px;
+        .fund-hero {
+            text-align: center;
+            max-width: 640px;
+            margin: 0 auto 40px;
         }
 
-        .fund-discovery-header h2 {
+        .fund-hero h2 {
             margin: 0;
             color: #1d1d1f;
-            font-size: 24px;
+            font-size: 40px;
+            font-weight: 700;
+            letter-spacing: -0.8px;
+            line-height: 1.1;
         }
 
         .fund-discovery-copy {
-            margin: 8px 0 0 0;
+            margin: 14px auto 0;
             color: #6e6e73;
-            font-size: 14px;
-            line-height: 1.6;
-            max-width: 720px;
+            font-size: 17px;
+            line-height: 1.47;
+            max-width: 520px;
+        }
+
+        .fund-toolbar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .fund-refresh-btn {
+            appearance: none;
+            border: none;
+            border-radius: 980px;
+            padding: 12px 28px;
+            background: #007aff;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .fund-refresh-btn:hover {
+            background: #0066d6;
+        }
+
+        .fund-refresh-btn:active {
+            transform: scale(0.98);
+        }
+
+        .fund-refresh-btn:disabled {
+            opacity: 0.55;
+            cursor: progress;
+        }
+
+        .fund-refresh-btn.is-secondary {
+            background: #f5f5f7;
+            color: #007aff;
+        }
+
+        .fund-refresh-btn.is-secondary:hover {
+            background: #e8e8ed;
         }
 
         .fetch-status {
-            margin-top: 14px;
-            color: #6e6e73;
-            font-size: 14px;
+            margin: 0;
+            color: #86868b;
+            font-size: 13px;
+            letter-spacing: -0.08px;
+            min-height: 18px;
         }
 
         .fund-category-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 18px;
-            margin-top: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 36px;
         }
 
-        .fund-category-card {
-            background: white;
-            border: 1px solid #e5e5ea;
-            border-radius: 16px;
-            padding: 18px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+        .fund-category-block {
+            animation: fundReveal 0.45s ease both;
         }
 
-        .fund-category-card h3 {
-            margin: 0 0 12px 0;
+        .fund-category-block:nth-child(2) { animation-delay: 0.04s; }
+        .fund-category-block:nth-child(3) { animation-delay: 0.08s; }
+        .fund-category-block:nth-child(4) { animation-delay: 0.12s; }
+        .fund-category-block:nth-child(5) { animation-delay: 0.16s; }
+        .fund-category-block:nth-child(6) { animation-delay: 0.2s; }
+        .fund-category-block:nth-child(7) { animation-delay: 0.24s; }
+        .fund-category-block:nth-child(8) { animation-delay: 0.28s; }
+        .fund-category-block:nth-child(9) { animation-delay: 0.32s; }
+        .fund-category-block:nth-child(10) { animation-delay: 0.36s; }
+
+        @keyframes fundReveal {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fund-category-heading {
+            margin: 0 0 12px 4px;
             color: #1d1d1f;
-            font-size: 18px;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.35px;
         }
 
-        .fund-category-card table {
-            margin-top: 0;
-            box-shadow: none;
-            border-radius: 12px;
-            border: 1px solid #e5e5ea;
+        .fund-list {
+            list-style: none;
+            margin: 0;
+            padding: 4px 0;
+            background: #f5f5f7;
+            border-radius: 18px;
+            overflow: hidden;
         }
 
-        .fund-category-card th,
-        .fund-category-card td {
-            padding: 10px 12px;
-            font-size: 13px;
+        .fund-row {
+            display: grid;
+            grid-template-columns: 44px minmax(0, 1fr) auto;
+            gap: 14px;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            transition: background-color 0.2s ease;
+        }
+
+        .fund-row:last-child {
+            border-bottom: none;
+        }
+
+        .fund-row:hover {
+            background: rgba(255, 255, 255, 0.55);
         }
 
         .fund-rank {
-            color: #6e6e73;
-            font-weight: 700;
-            width: 28px;
+            color: #86868b;
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.4px;
+            font-variant-numeric: tabular-nums;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .fund-rank.is-top {
+            color: #1d1d1f;
+        }
+
+        .fund-info {
+            min-width: 0;
         }
 
         .fund-name {
-            font-weight: 600;
+            display: block;
             color: #1d1d1f;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+            line-height: 1.3;
         }
 
         .fund-meta {
             display: block;
             margin-top: 4px;
-            color: #6e6e73;
+            color: #86868b;
+            font-size: 13px;
+            line-height: 1.35;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .fund-metrics {
+            display: grid;
+            grid-template-columns: auto auto;
+            gap: 20px;
+            text-align: right;
+        }
+
+        .fund-metric {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 88px;
+        }
+
+        .fund-metric-label {
+            color: #86868b;
             font-size: 11px;
-            line-height: 1.4;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+            text-transform: uppercase;
         }
 
-        .fund-aum {
-            font-weight: 700;
+        .fund-metric-value {
             color: #1d1d1f;
-            white-space: nowrap;
-        }
-
-        .fund-nav {
-            color: #007aff;
+            font-size: 15px;
             font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.2px;
             white-space: nowrap;
         }
 
-        .inline-note {
-            display: inline-flex;
-            align-items: center;
-            padding: 8px 12px;
-            background: white;
-            border: 1px solid #e5e5ea;
-            border-radius: 999px;
-            color: #1d1d1f;
-            font-size: 12px;
-            font-weight: 700;
+        .fund-metric-value.is-nav {
+            color: #007aff;
+        }
+
+        .fund-empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: #86868b;
+            font-size: 15px;
+            line-height: 1.5;
         }
 
         .heatmap-panel {
@@ -827,8 +941,33 @@
                 grid-template-columns: 1fr;
             }
 
-            .fund-discovery-header {
-                flex-direction: column;
+            .fund-hero h2 {
+                font-size: 32px;
+            }
+
+            .fund-discovery-copy {
+                font-size: 15px;
+            }
+
+            .fund-row {
+                grid-template-columns: 32px minmax(0, 1fr);
+                gap: 12px;
+                padding: 14px 16px;
+            }
+
+            .fund-rank {
+                font-size: 18px;
+            }
+
+            .fund-metrics {
+                grid-column: 2;
+                justify-content: start;
+                text-align: left;
+                gap: 24px;
+            }
+
+            .fund-metric {
+                min-width: 0;
             }
 
             .heatmap-header,
@@ -1032,16 +1171,14 @@
 
         <div id="top-funds-tab" class="tab-content" style="display: none;">
             <div class="fund-discovery-section">
-                <div class="fund-discovery-header">
-                    <div>
-                        <h2>Top Equity Funds By AUM</h2>
-                        <p class="fund-discovery-copy">Fetch the top 5 equity mutual funds in each category such as Large Cap, Mid Cap, Flexi Cap and Multi Cap. Rankings are based on AMFI AAUM data, with MFAPI used to enrich shortlisted funds with latest NAV and scheme metadata.</p>
+                <header class="fund-hero">
+                    <h2>Top Equity Funds</h2>
+                    <p class="fund-discovery-copy">The five largest schemes in each equity category, ranked by AUM.</p>
+                    <div class="fund-toolbar">
+                        <button id="top-funds-refresh" class="fund-refresh-btn" type="button" onclick="loadTopEquityFunds()">Show Top Funds</button>
+                        <p id="top-funds-status" class="fetch-status">AMFI rankings with latest NAV.</p>
                     </div>
-                    <div class="inline-note">Top 5 by AUM</div>
-                </div>
-
-                <button class="calculate-btn" onclick="loadTopEquityFunds()">Fetch Top Equity Funds</button>
-                <div id="top-funds-status" class="fetch-status">Ready to fetch the latest category leaders.</div>
+                </header>
                 <div id="top-funds-results" class="fund-category-grid"></div>
             </div>
         </div>
@@ -1617,44 +1754,63 @@
         function renderTopEquityFunds(data) {
             const container = document.getElementById('top-funds-results');
             const status = document.getElementById('top-funds-status');
+            const refreshBtn = document.getElementById('top-funds-refresh');
 
             if (!data || !data.orderedCategories || data.orderedCategories.length === 0) {
-                container.innerHTML = '';
-                status.textContent = 'No equity fund categories were returned.';
+                container.innerHTML = '<p class="fund-empty-state">No equity fund categories were returned.</p>';
+                status.textContent = 'Nothing to show right now.';
                 return;
             }
 
-            status.textContent = `Updated ${new Date(data.generatedAt).toLocaleString()} using AMFI AUM and MFAPI enrichment.`;
+            const updatedAt = new Date(data.generatedAt);
+            status.textContent = `Updated ${updatedAt.toLocaleString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit'
+            })} · AMFI · MFAPI`;
+
+            if (refreshBtn) {
+                refreshBtn.textContent = 'Refresh';
+                refreshBtn.classList.add('is-secondary');
+            }
 
             container.innerHTML = data.orderedCategories.map(category => {
                 const funds = data.categories[category] || [];
-                const rows = funds.map((fund, index) => `
-                    <tr>
-                        <td class="fund-rank">#${index + 1}</td>
-                        <td>
-                            <span class="fund-name">${fund.mfapiSchemeName || fund.displayName}</span>
-                            <span class="fund-meta">${fund.fundHouse || 'Fund house unavailable'}${fund.schemeCode ? ` • Code ${fund.schemeCode}` : ''}</span>
-                        </td>
-                        <td class="fund-aum">${formatCrores(fund.aumCrores)}</td>
-                        <td class="fund-nav">${fund.latestNav ? `₹${fund.latestNav}` : 'NA'}</td>
-                    </tr>
-                `).join('');
+                const rows = funds.map((fund, index) => {
+                    const name = escapeHtml(fund.mfapiSchemeName || fund.displayName || 'Unnamed fund');
+                    const house = escapeHtml(fund.fundHouse || 'Fund house unavailable');
+                    const code = fund.schemeCode ? ` · ${escapeHtml(String(fund.schemeCode))}` : '';
+                    const nav = fund.latestNav
+                        ? `₹${escapeHtml(String(fund.latestNav))}`
+                        : '—';
+
+                    return `
+                        <li class="fund-row">
+                            <span class="fund-rank${index === 0 ? ' is-top' : ''}">${index + 1}</span>
+                            <div class="fund-info">
+                                <span class="fund-name">${name}</span>
+                                <span class="fund-meta">${house}${code}</span>
+                            </div>
+                            <div class="fund-metrics">
+                                <div class="fund-metric">
+                                    <span class="fund-metric-label">AUM</span>
+                                    <span class="fund-metric-value">${formatCrores(fund.aumCrores)}</span>
+                                </div>
+                                <div class="fund-metric">
+                                    <span class="fund-metric-label">NAV</span>
+                                    <span class="fund-metric-value is-nav">${nav}</span>
+                                </div>
+                            </div>
+                        </li>
+                    `;
+                }).join('');
 
                 return `
-                    <div class="fund-category-card">
-                        <h3>${category}</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Rank</th>
-                                    <th>Fund</th>
-                                    <th>AUM</th>
-                                    <th>Latest NAV</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rows}</tbody>
-                        </table>
-                    </div>
+                    <section class="fund-category-block">
+                        <h3 class="fund-category-heading">${escapeHtml(category)}</h3>
+                        <ol class="fund-list">${rows}</ol>
+                    </section>
                 `;
             }).join('');
         }
@@ -1662,10 +1818,15 @@
         async function loadTopEquityFunds() {
             const status = document.getElementById('top-funds-status');
             const container = document.getElementById('top-funds-results');
+            const refreshBtn = document.getElementById('top-funds-refresh');
 
-            status.textContent = 'Fetching category leaders... this can take a few seconds.';
+            status.textContent = 'Fetching the latest rankings…';
+            if (refreshBtn) {
+                refreshBtn.disabled = true;
+                refreshBtn.textContent = 'Loading…';
+            }
             if (!topFundsLoaded) {
-                container.innerHTML = '';
+                container.innerHTML = '<p class="fund-empty-state">Gathering category leaders.</p>';
             }
 
             try {
@@ -1697,7 +1858,14 @@
             } catch (error) {
                 status.textContent = `Unable to fetch top funds right now. ${error.message}`;
                 if (!topFundsLoaded) {
-                    container.innerHTML = '';
+                    container.innerHTML = '<p class="fund-empty-state">Try again in a moment.</p>';
+                }
+                if (refreshBtn) {
+                    refreshBtn.textContent = topFundsLoaded ? 'Refresh' : 'Show Top Funds';
+                }
+            } finally {
+                if (refreshBtn) {
+                    refreshBtn.disabled = false;
                 }
             }
         }
