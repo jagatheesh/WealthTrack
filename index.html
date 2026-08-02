@@ -1243,7 +1243,7 @@
             <p id="goal-section-note" class="calc-section-note">What you want to reach, and by when.</p>
             <div id="goal-fields" class="goal-fields">
                 <div class="input-group">
-                    <label for="goal-corpus">Target Corpus</label>
+                    <label for="goal-corpus" id="goal-corpus-label">Target Corpus (Crores)</label>
                     <input type="number" id="goal-corpus" value="5" step="0.1" min="0">
                 </div>
                 <div class="input-group">
@@ -1570,6 +1570,8 @@
                 goalSummary.classList.remove('is-visible');
                 goalSummary.innerHTML = '';
             }
+
+            updateGoalUnitLabels();
 
             if (calculatorMode === 'goal') {
                 const startYear = parseInt(document.getElementById('start-year').value, 10) || 2026;
@@ -2182,6 +2184,36 @@
                 initialInput.step = '1000';
                 annualInput.step = '50';
                 goalCorpusInput.step = '1000';
+            }
+
+            updateGoalUnitLabels();
+        }
+
+        function updateGoalUnitLabels() {
+            const currency = document.getElementById('currency').value;
+            const inrUnit = document.getElementById('inrUnit').value;
+            const goalLabel = document.getElementById('goal-corpus-label');
+            const initialLabel = document.getElementById('initial-label');
+            const annualLabel = document.getElementById('annual-label');
+            if (!goalLabel) return;
+
+            let unitText = '';
+            if (currency === 'INR') {
+                if (inrUnit === 'lakhs') unitText = 'Lakhs';
+                else if (inrUnit === 'crores') unitText = 'Crores';
+                else unitText = 'Rupees';
+            } else {
+                unitText = 'USD';
+            }
+
+            goalLabel.textContent = `Target Corpus (${unitText})`;
+
+            if (calculatorMode === 'goal') {
+                initialLabel.textContent = `Current Corpus (${unitText})`;
+                annualLabel.textContent = `Current Monthly SIP (${unitText})`;
+            } else {
+                initialLabel.textContent = `Initial Corpus (${unitText})`;
+                annualLabel.textContent = `Monthly SIP (${unitText})`;
             }
         }
         
