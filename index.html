@@ -352,11 +352,63 @@
             display: none;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
-            margin-bottom: 28px;
+            margin-bottom: 20px;
         }
 
         .goal-fields.is-visible {
             display: grid;
+        }
+
+        .calc-section-heading {
+            display: none;
+            margin: 0 0 12px 2px;
+            color: #1d1d1f;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .calc-section-heading.is-visible {
+            display: block;
+        }
+
+        .calc-section-note {
+            display: none;
+            margin: -4px 0 16px 2px;
+            color: #6e6e73;
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        .calc-section-note.is-visible {
+            display: block;
+        }
+
+        .goal-details {
+            display: none;
+            margin-top: 28px;
+        }
+
+        .goal-details.is-visible {
+            display: block;
+        }
+
+        .goal-details > summary {
+            cursor: pointer;
+            list-style: none;
+            color: #007aff;
+            font-size: 15px;
+            font-weight: 600;
+            padding: 8px 0;
+            user-select: none;
+        }
+
+        .goal-details > summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .goal-details[open] > summary {
+            margin-bottom: 12px;
         }
 
         .goal-summary {
@@ -1186,6 +1238,22 @@
             5. "Small monthly steps, giant wealth leaps"
             6. "Turn your dreams into wealth, one SIP at a time"
             -->
+
+            <h2 id="goal-section-heading" class="calc-section-heading">Your goal</h2>
+            <p id="goal-section-note" class="calc-section-note">What you want to reach, and by when.</p>
+            <div id="goal-fields" class="goal-fields">
+                <div class="input-group">
+                    <label for="goal-corpus">Target Corpus</label>
+                    <input type="number" id="goal-corpus" value="5" step="0.1" min="0">
+                </div>
+                <div class="input-group">
+                    <label for="goal-year">Target Year</label>
+                    <input type="number" id="goal-year" value="2046" step="1">
+                </div>
+            </div>
+
+            <h2 id="plan-section-heading" class="calc-section-heading">Your current plan</h2>
+            <p id="plan-section-note" class="calc-section-note">What you already have and invest today — used to check if you’re on track and how much SIP you’d need.</p>
             
             <div class="input-section">
             <div class="input-group">
@@ -1206,12 +1274,12 @@
             </div>
             
             <div class="input-group">
-                <label for="initial">Initial Corpus</label>
+                <label for="initial" id="initial-label">Initial Corpus</label>
                 <input type="number" id="initial" value="1" step="0.01">
             </div>
             
             <div class="input-group">
-                <label for="annual">Monthly SIP</label>
+                <label for="annual" id="annual-label">Monthly SIP</label>
                 <input type="number" id="annual" value="0.0417" step="0.001">
             </div>
             
@@ -1235,17 +1303,6 @@
                 <input type="number" id="inflation" value="4" step="0.1">
             </div>
         </div>
-
-        <div id="goal-fields" class="goal-fields">
-            <div class="input-group">
-                <label for="goal-corpus">Target Corpus</label>
-                <input type="number" id="goal-corpus" value="5" step="0.1" min="0">
-            </div>
-            <div class="input-group">
-                <label for="goal-year">Target Year</label>
-                <input type="number" id="goal-year" value="2046" step="1">
-            </div>
-        </div>
         
         <div class="variables-section">
             <h2>Custom Variables</h2>
@@ -1260,6 +1317,11 @@
         <div class="chart-container">
             <canvas id="growthChart"></canvas>
         </div>
+
+        <details id="goal-year-details" class="goal-details">
+            <summary>Show year-by-year breakdown</summary>
+            <table id="results-goal"></table>
+        </details>
         
         <table id="results">
         </table>
@@ -1474,16 +1536,42 @@
             const goalFields = document.getElementById('goal-fields');
             const calculateBtn = document.getElementById('calculate-btn');
             const goalSummary = document.getElementById('goal-summary');
+            const goalHeading = document.getElementById('goal-section-heading');
+            const goalNote = document.getElementById('goal-section-note');
+            const planHeading = document.getElementById('plan-section-heading');
+            const planNote = document.getElementById('plan-section-note');
+            const initialLabel = document.getElementById('initial-label');
+            const annualLabel = document.getElementById('annual-label');
+            const resultsTable = document.getElementById('results');
+            const goalDetails = document.getElementById('goal-year-details');
+            const resultsGoalTable = document.getElementById('results-goal');
 
             projectBtn.classList.toggle('is-active', calculatorMode === 'project');
             goalBtn.classList.toggle('is-active', calculatorMode === 'goal');
             goalFields.classList.toggle('is-visible', calculatorMode === 'goal');
+            goalHeading.classList.toggle('is-visible', calculatorMode === 'goal');
+            goalNote.classList.toggle('is-visible', calculatorMode === 'goal');
+            planHeading.classList.toggle('is-visible', calculatorMode === 'goal');
+            planNote.classList.toggle('is-visible', calculatorMode === 'goal');
+            goalDetails.classList.toggle('is-visible', calculatorMode === 'goal');
             calculateBtn.textContent = calculatorMode === 'goal' ? 'Plan My Goal' : 'Calculate Growth';
 
-            if (calculatorMode !== 'goal') {
+            if (calculatorMode === 'goal') {
+                initialLabel.textContent = 'Current Corpus';
+                annualLabel.textContent = 'Current Monthly SIP';
+                resultsTable.style.display = 'none';
+                resultsTable.innerHTML = '';
+            } else {
+                initialLabel.textContent = 'Initial Corpus';
+                annualLabel.textContent = 'Monthly SIP';
+                resultsTable.style.display = '';
+                goalDetails.open = false;
+                resultsGoalTable.innerHTML = '';
                 goalSummary.classList.remove('is-visible');
                 goalSummary.innerHTML = '';
-            } else {
+            }
+
+            if (calculatorMode === 'goal') {
                 const startYear = parseInt(document.getElementById('start-year').value, 10) || 2026;
                 const goalYearInput = document.getElementById('goal-year');
                 const goalYear = parseInt(goalYearInput.value, 10);
@@ -1892,7 +1980,14 @@
                 }
             });
 
-            document.getElementById('results').innerHTML = html;
+            document.getElementById(calculatorMode === 'goal' ? 'results-goal' : 'results').innerHTML = html;
+            if (calculatorMode === 'goal') {
+                document.getElementById('results').innerHTML = '';
+                document.getElementById('results').style.display = 'none';
+            } else {
+                document.getElementById('results').style.display = '';
+                document.getElementById('results-goal').innerHTML = '';
+            }
 
             const ctx = document.getElementById('growthChart').getContext('2d');
             const symbol = currency === 'INR' ? '₹' : '$';
