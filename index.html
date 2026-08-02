@@ -166,14 +166,126 @@
         }
         
         .chart-container {
-            margin-top: 48px;
-            margin-bottom: 48px;
+            margin-top: 36px;
+            margin-bottom: 36px;
             position: relative;
-            height: 450px;
-            padding: 32px;
-            background: #f5f5f7;
-            border-radius: 16px;
-            border: 1px solid #e5e5ea;
+            height: 380px;
+            padding: 0;
+            background: transparent;
+            border-radius: 0;
+            border: none;
+        }
+
+        .viz-card {
+            margin-top: 36px;
+            margin-bottom: 28px;
+            padding: 28px 0 8px;
+            border-top: 1px solid #d2d2d7;
+        }
+
+        .viz-action-title {
+            margin: 0;
+            color: #1d1d1f;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.45px;
+            line-height: 1.25;
+            max-width: 920px;
+        }
+
+        .viz-so-what {
+            margin: 10px 0 0;
+            color: #6e6e73;
+            font-size: 15px;
+            line-height: 1.5;
+            max-width: 820px;
+        }
+
+        .viz-kpis {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0;
+            margin: 24px 0 8px;
+            border-top: 1px solid #e5e5ea;
+            border-bottom: 1px solid #e5e5ea;
+        }
+
+        .viz-kpi {
+            padding: 16px 18px 16px 0;
+            border-right: 1px solid #e5e5ea;
+        }
+
+        .viz-kpi:last-child {
+            border-right: none;
+            padding-right: 0;
+        }
+
+        .viz-kpi-label {
+            display: block;
+            color: #86868b;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.35px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .viz-kpi-value {
+            display: block;
+            color: #424245;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.4px;
+            font-variant-numeric: tabular-nums;
+            line-height: 1.1;
+        }
+
+        .viz-kpi.is-accent .viz-kpi-value {
+            color: #0b5fff;
+        }
+
+        .viz-kpi-note {
+            display: block;
+            margin-top: 6px;
+            color: #86868b;
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .viz-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin: 18px 0 8px;
+            color: #6e6e73;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .viz-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .viz-swatch {
+            width: 22px;
+            height: 0;
+            border-top: 2.5px solid #0b5fff;
+        }
+
+        .viz-swatch.is-real {
+            border-top-color: #a1a1a6;
+            border-top-width: 2px;
+        }
+
+        .viz-swatch.is-goal {
+            border-top: 2px dashed #1d1d1f;
+        }
+
+        .viz-swatch.is-invested {
+            border-top-color: #d2d2d7;
+            border-top-width: 2px;
         }
         
         table {
@@ -1402,6 +1514,23 @@
                 grid-template-columns: 1fr;
             }
 
+            .viz-action-title {
+                font-size: 22px;
+            }
+
+            .viz-kpis {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .viz-kpi:nth-child(2) {
+                border-right: none;
+            }
+
+            .viz-kpi:nth-child(1),
+            .viz-kpi:nth-child(2) {
+                border-bottom: 1px solid #e5e5ea;
+            }
+
             .goal-summary-header {
                 flex-direction: column;
             }
@@ -1589,10 +1718,16 @@
         <button id="calculate-btn" class="calculate-btn" onclick="calculate()">Calculate Growth</button>
 
         <div id="goal-summary" class="goal-summary" aria-live="polite"></div>
-        
-        <div class="chart-container">
-            <canvas id="growthChart"></canvas>
-        </div>
+
+        <section id="sip-viz-card" class="viz-card" aria-label="SIP projection visualization">
+            <h2 id="viz-action-title" class="viz-action-title">Projection ready</h2>
+            <p id="viz-so-what" class="viz-so-what">Adjust inputs and calculate to see the executive takeaway.</p>
+            <div id="viz-kpis" class="viz-kpis"></div>
+            <div id="viz-legend" class="viz-legend"></div>
+            <div class="chart-container">
+                <canvas id="growthChart"></canvas>
+            </div>
+        </section>
 
         <details id="goal-year-details" class="goal-details">
             <summary>Show year-by-year breakdown</summary>
@@ -2199,64 +2334,70 @@
             html += '</tr>';
 
             const yearsLabels = [];
+            const nominalSeries = [];
+            const realSeries = [];
+            const investedSeries = [];
+            let cumulativeInvested = initial;
+
             const chartDatasets = [
                 {
-                    label: 'Corpus Growth',
-                    data: [],
-                    borderColor: '#007aff',
-                    backgroundColor: 'rgba(0, 122, 255, 0.05)',
-                    fill: true,
-                    tension: 0.3,
+                    label: 'Nominal corpus',
+                    data: nominalSeries,
+                    borderColor: '#0b5fff',
+                    backgroundColor: 'transparent',
+                    fill: false,
+                    tension: 0,
                     yAxisID: 'y',
                     borderWidth: 2.5,
                     pointRadius: 0,
-                    pointHoverRadius: 4
+                    pointHoverRadius: 3,
+                    pointHoverBackgroundColor: '#0b5fff',
+                    order: 1
                 },
                 {
-                    label: 'Inflation-Adjusted',
-                    data: [],
-                    borderColor: '#ff9500',
-                    backgroundColor: 'rgba(255, 149, 0, 0.05)',
-                    fill: true,
-                    tension: 0.3,
+                    label: 'Real purchasing power',
+                    data: realSeries,
+                    borderColor: '#a1a1a6',
+                    backgroundColor: 'transparent',
+                    fill: false,
+                    tension: 0,
                     yAxisID: 'y',
                     borderWidth: 2,
-                    borderDash: [3, 2],
                     pointRadius: 0,
-                    pointHoverRadius: 4
-                }
-            ];
-
-            const variableColors = ['#ff3b30', '#5856d6', '#ff2d55', '#5ac8fa', '#34c759'];
-            customVariables.forEach((v, i) => {
-                chartDatasets.push({
-                    label: v.name,
-                    data: [],
-                    borderColor: variableColors[i % variableColors.length],
+                    pointHoverRadius: 3,
+                    order: 2
+                },
+                {
+                    label: 'Capital invested',
+                    data: investedSeries,
+                    borderColor: '#d2d2d7',
                     backgroundColor: 'transparent',
-                    borderDash: [4, 3],
-                    tension: 0.3,
-                    yAxisID: 'y1',
+                    fill: false,
+                    tension: 0,
+                    yAxisID: 'y',
                     borderWidth: 1.5,
                     pointRadius: 0,
-                    pointHoverRadius: 3
-                });
-            });
+                    pointHoverRadius: 0,
+                    order: 3
+                }
+            ];
 
             let goalDisplayValue = null;
             if (calculatorMode === 'goal' && targetCorpus !== null) {
                 goalDisplayValue = convertFromAbsolute(targetCorpus, currency, inrUnit);
                 chartDatasets.push({
-                    label: 'Goal',
+                    label: 'Goal (plan)',
                     data: [],
-                    borderColor: '#34c759',
+                    borderColor: '#1d1d1f',
                     backgroundColor: 'transparent',
                     borderDash: [6, 4],
+                    fill: false,
                     tension: 0,
                     yAxisID: 'y',
-                    borderWidth: 2,
+                    borderWidth: 1.5,
                     pointRadius: 0,
-                    pointHoverRadius: 0
+                    pointHoverRadius: 0,
+                    order: 0
                 });
             }
 
@@ -2282,15 +2423,11 @@
                 html += '</tr>';
 
                 yearsLabels.push(row.year);
+                cumulativeInvested += row.totalSIP;
 
-                const displayValue = convertFromAbsolute(row.endCorpus, currency, inrUnit);
-                const displayInflationAdjusted = convertFromAbsolute(row.inflationAdjusted, currency, inrUnit);
-
-                chartDatasets[0].data.push(displayValue);
-                chartDatasets[1].data.push(displayInflationAdjusted);
-                customVariables.forEach((v, i) => {
-                    chartDatasets[i + 2].data.push(row.variables[v.id]);
-                });
+                nominalSeries.push(convertFromAbsolute(row.endCorpus, currency, inrUnit));
+                realSeries.push(convertFromAbsolute(row.inflationAdjusted, currency, inrUnit));
+                investedSeries.push(convertFromAbsolute(cumulativeInvested, currency, inrUnit));
 
                 if (goalDisplayValue !== null) {
                     chartDatasets[goalDatasetIndex].data.push(goalDisplayValue);
@@ -2306,6 +2443,32 @@
                 document.getElementById('results-goal').innerHTML = '';
             }
 
+            const finalRow = rows[rows.length - 1];
+            const finalCorpus = finalRow ? finalRow.endCorpus : 0;
+            const finalReal = finalRow ? finalRow.inflationAdjusted : 0;
+            const totalInvested = cumulativeInvested;
+            const totalGains = finalCorpus - totalInvested;
+            const returnPct = parseFloat(document.getElementById('return').value);
+            const endYear = finalRow ? finalRow.year : startYear;
+
+            renderSipExecutiveViz({
+                currency,
+                inrUnit,
+                startYear,
+                endYear,
+                returnPct,
+                annualStepUpRate,
+                finalCorpus,
+                finalReal,
+                totalInvested,
+                totalGains,
+                targetCorpus,
+                targetYear,
+                goalHitYear,
+                requiredMonthlySIP,
+                currentMonthlySIP: initialMonthlySIP
+            });
+
             const ctx = document.getElementById('growthChart').getContext('2d');
             const symbol = currency === 'INR' ? '₹' : '$';
             let unitSuffix = '';
@@ -2316,10 +2479,6 @@
 
             if (chart) chart.destroy();
 
-            const chartTitle = calculatorMode === 'goal'
-                ? `Path to ${formatNumber(targetCorpus, currency, inrUnit)} by ${targetYear}`
-                : 'Corpus Growth Over 30 Years';
-
             chart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -2329,54 +2488,31 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: false,
                     interaction: {
                         intersect: false,
                         mode: 'index'
                     },
                     plugins: {
-                        title: {
-                            display: true,
-                            text: chartTitle,
-                            font: {
-                                size: 18,
-                                weight: 600
-                            },
-                            color: '#1d1d1f',
-                            padding: {
-                                top: 10,
-                                bottom: 30
-                            }
-                        },
-                        legend: {
-                            display: true,
-                            position: 'top',
-                            labels: {
-                                color: '#1d1d1f',
-                                font: {
-                                    size: 13,
-                                    weight: 500
-                                },
-                                usePointStyle: true,
-                                padding: 20
-                            }
-                        },
+                        title: { display: false },
+                        legend: { display: false },
                         tooltip: {
-                            backgroundColor: 'rgba(29, 29, 31, 0.9)',
-                            titleFont: {
-                                size: 14,
-                                weight: 600
-                            },
-                            bodyFont: {
-                                size: 13
-                            },
-                            padding: 12,
-                            cornerRadius: 8,
+                            backgroundColor: '#1d1d1f',
+                            titleColor: '#f5f5f7',
+                            bodyColor: '#f5f5f7',
+                            titleFont: { size: 13, weight: '600' },
+                            bodyFont: { size: 12, weight: '500' },
+                            padding: 10,
+                            cornerRadius: 2,
+                            displayColors: true,
+                            boxWidth: 10,
+                            boxHeight: 2,
                             callbacks: {
                                 label: function(context) {
-                                    if (context.dataset.label === 'Goal' || context.datasetIndex === 0 || context.datasetIndex === 1) {
-                                        return context.dataset.label + ': ' + symbol + context.parsed.y.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + unitSuffix;
-                                    }
-                                    return context.dataset.label + ': ' + context.parsed.y;
+                                    const value = symbol + context.parsed.y.toLocaleString(undefined, {
+                                        maximumFractionDigits: 2
+                                    }) + unitSuffix;
+                                    return context.dataset.label + ': ' + value;
                                 }
                             }
                         }
@@ -2386,55 +2522,121 @@
                             type: 'linear',
                             position: 'left',
                             beginAtZero: true,
+                            border: { display: false },
                             grid: {
-                                color: 'rgba(0, 0, 0, 0.05)',
-                                drawBorder: false
+                                color: 'rgba(0, 0, 0, 0.06)',
+                                drawTicks: false,
+                                lineWidth: 1
                             },
                             ticks: {
                                 color: '#86868b',
-                                font: {
-                                    size: 12
-                                },
-                                padding: 10,
+                                font: { size: 11, weight: '500' },
+                                padding: 8,
+                                maxTicksLimit: 6,
                                 callback: function(value) {
-                                    return symbol + value.toLocaleString() + unitSuffix;
+                                    return symbol + Number(value).toLocaleString() + unitSuffix;
                                 }
                             }
                         },
-                        y1: {
-                            type: 'linear',
-                            position: 'right',
-                            beginAtZero: true,
-                            display: customVariables.length > 0,
-                            grid: {
-                                display: false,
-                                drawBorder: false
-                            },
-                            ticks: {
-                                color: '#86868b',
-                                font: {
-                                    size: 12
-                                },
-                                padding: 10
-                            }
-                        },
                         x: {
-                            grid: {
-                                display: false,
-                                drawBorder: false
-                            },
+                            border: { display: false },
+                            grid: { display: false, drawTicks: false },
                             ticks: {
                                 color: '#86868b',
-                                font: {
-                                    size: 12
-                                },
+                                font: { size: 11, weight: '500' },
                                 maxRotation: 0,
-                                autoSkipPadding: 20
+                                autoSkip: true,
+                                maxTicksLimit: 8,
+                                padding: 6
                             }
                         }
                     }
                 }
             });
+        }
+
+        function renderSipExecutiveViz({
+            currency,
+            inrUnit,
+            startYear,
+            endYear,
+            returnPct,
+            annualStepUpRate,
+            finalCorpus,
+            finalReal,
+            totalInvested,
+            totalGains,
+            targetCorpus,
+            targetYear,
+            goalHitYear,
+            requiredMonthlySIP,
+            currentMonthlySIP
+        }) {
+            const titleEl = document.getElementById('viz-action-title');
+            const soWhatEl = document.getElementById('viz-so-what');
+            const kpisEl = document.getElementById('viz-kpis');
+            const legendEl = document.getElementById('viz-legend');
+            const stepUpPct = Math.round((annualStepUpRate || 0) * 1000) / 10;
+
+            let actionTitle = '';
+            let soWhat = '';
+            let accentKey = 'ending';
+
+            if (calculatorMode === 'goal' && targetCorpus != null && targetYear != null) {
+                const required = requiredMonthlySIP || 0;
+                const gap = required - currentMonthlySIP;
+                if (goalHitYear != null && goalHitYear <= targetYear) {
+                    const yearsEarly = targetYear - goalHitYear;
+                    actionTitle = yearsEarly > 0
+                        ? `Current SIP reaches ${formatNumber(targetCorpus, currency, inrUnit)} by ${goalHitYear} — ${yearsEarly} year${yearsEarly === 1 ? '' : 's'} ahead of plan`
+                        : `Current SIP reaches ${formatNumber(targetCorpus, currency, inrUnit)} on schedule in ${targetYear}`;
+                    soWhat = `At ${returnPct}% assumed returns with ${stepUpPct}% annual SIP step-up, the existing contribution plan clears the milestone without increasing monthly outlay.`;
+                    accentKey = 'ending';
+                } else {
+                    actionTitle = `${formatNumber(targetCorpus, currency, inrUnit)} by ${targetYear} needs ${formatNumber(required, currency, inrUnit)}/mo SIP`;
+                    soWhat = gap > 0
+                        ? `That is ${formatNumber(gap, currency, inrUnit)} more per month than today's SIP. Raise contributions or extend the horizon to close the gap.`
+                        : `With current assumptions, the plan still falls short by the target year — revisit return or step-up assumptions.`;
+                    accentKey = 'required';
+                }
+            } else {
+                const gainShare = finalCorpus > 0 ? Math.round((totalGains / finalCorpus) * 100) : 0;
+                actionTitle = `By ${endYear}, corpus reaches ${formatNumber(finalCorpus, currency, inrUnit)} — ${formatNumber(finalReal, currency, inrUnit)} in today's money`;
+                soWhat = `Over ${endYear - startYear} years at ${returnPct}% returns, market gains contribute ~${gainShare}% of ending wealth; inflation erodes the rest of the headline number.`;
+                accentKey = 'ending';
+            }
+
+            titleEl.textContent = actionTitle;
+            soWhatEl.textContent = soWhat;
+
+            const kpiDefs = calculatorMode === 'goal' && targetCorpus != null
+                ? [
+                    { key: 'ending', label: 'Corpus at target', value: formatNumber(finalCorpus, currency, inrUnit), note: `Year ${targetYear}` },
+                    { key: 'real', label: 'Real value', value: formatNumber(finalReal, currency, inrUnit), note: 'Inflation-adjusted' },
+                    { key: 'invested', label: 'Capital invested', value: formatNumber(totalInvested, currency, inrUnit), note: 'Initial + SIPs' },
+                    { key: 'required', label: 'Required SIP', value: formatNumber(requiredMonthlySIP || 0, currency, inrUnit), note: 'Monthly, with step-up' }
+                ]
+                : [
+                    { key: 'ending', label: 'Ending corpus', value: formatNumber(finalCorpus, currency, inrUnit), note: `Year ${endYear}` },
+                    { key: 'real', label: 'Real purchasing power', value: formatNumber(finalReal, currency, inrUnit), note: 'Inflation-adjusted' },
+                    { key: 'invested', label: 'Capital invested', value: formatNumber(totalInvested, currency, inrUnit), note: 'Initial + SIPs' },
+                    { key: 'gains', label: 'Market gains', value: formatNumber(Math.max(totalGains, 0), currency, inrUnit), note: 'Ending − invested' }
+                ];
+
+            kpisEl.innerHTML = kpiDefs.map(kpi => `
+                <div class="viz-kpi${kpi.key === accentKey ? ' is-accent' : ''}">
+                    <span class="viz-kpi-label">${kpi.label}</span>
+                    <span class="viz-kpi-value">${kpi.value}</span>
+                    <span class="viz-kpi-note">${kpi.note}</span>
+                </div>
+            `).join('');
+
+            legendEl.innerHTML = `
+                <span class="viz-legend-item"><span class="viz-swatch"></span>Nominal corpus (actual path)</span>
+                <span class="viz-legend-item"><span class="viz-swatch is-real"></span>Real purchasing power</span>
+                <span class="viz-legend-item"><span class="viz-swatch is-invested"></span>Capital invested</span>
+                ${calculatorMode === 'goal' ? '<span class="viz-legend-item"><span class="viz-swatch is-goal"></span>Goal (plan)</span>' : ''}
+            `;
         }
         
         function setHistoricalReturn(index) {
