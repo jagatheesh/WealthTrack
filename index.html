@@ -216,6 +216,10 @@
         tbody tr:hover {
             background-color: #f5f5f7;
         }
+
+        tr.goal-hit-row td {
+            background: rgba(52, 199, 89, 0.08);
+        }
         
         .positive {
             color: #34c759;
@@ -309,6 +313,154 @@
             color: #86868b;
             font-size: 12px;
             margin: 12px 0 0 0;
+        }
+
+        .calc-mode-toggle {
+            display: flex;
+            justify-content: center;
+            margin: 0 auto 28px;
+            padding: 4px;
+            width: fit-content;
+            max-width: 100%;
+            background: #f5f5f7;
+            border-radius: 14px;
+            border: 1px solid #e5e5ea;
+        }
+
+        .calc-mode-btn {
+            appearance: none;
+            border: none;
+            background: transparent;
+            color: #6e6e73;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.1px;
+            padding: 10px 18px;
+            border-radius: 11px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .calc-mode-btn.is-active {
+            background: #fff;
+            color: #1d1d1f;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .goal-fields {
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        .goal-fields.is-visible {
+            display: grid;
+        }
+
+        .goal-summary {
+            display: none;
+            margin: 28px 0 0;
+            padding: 24px;
+            background: #f5f5f7;
+            border: 1px solid #e5e5ea;
+            border-radius: 18px;
+        }
+
+        .goal-summary.is-visible {
+            display: block;
+            animation: fundReveal 0.35s ease both;
+        }
+
+        .goal-summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .goal-summary-header h3 {
+            margin: 0;
+            color: #1d1d1f;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.35px;
+        }
+
+        .goal-summary-copy {
+            margin: 6px 0 0;
+            color: #6e6e73;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .goal-status-pill {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 980px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: -0.1px;
+            background: #fff;
+            color: #1d1d1f;
+            border: 1px solid #e5e5ea;
+        }
+
+        .goal-status-pill.is-success {
+            background: rgba(52, 199, 89, 0.12);
+            color: #248a3d;
+            border-color: rgba(52, 199, 89, 0.25);
+        }
+
+        .goal-status-pill.is-warning {
+            background: rgba(255, 149, 0, 0.12);
+            color: #c93400;
+            border-color: rgba(255, 149, 0, 0.25);
+        }
+
+        .goal-metric-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .goal-metric {
+            background: #fff;
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .goal-metric-label {
+            display: block;
+            color: #86868b;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .goal-metric-value {
+            display: block;
+            color: #1d1d1f;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.4px;
+            line-height: 1.15;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .goal-metric-note {
+            display: block;
+            margin-top: 6px;
+            color: #6e6e73;
+            font-size: 13px;
+            line-height: 1.4;
         }
         
         .tab-container {
@@ -940,6 +1092,14 @@
                 grid-template-columns: 1fr;
             }
 
+            .goal-summary-header {
+                flex-direction: column;
+            }
+
+            .goal-metric-grid {
+                grid-template-columns: 1fr;
+            }
+
             .fund-hero h2 {
                 font-size: 32px;
             }
@@ -997,6 +1157,11 @@
         </div>
         
         <div id="calculator-tab" class="tab-content">
+            <div class="calc-mode-toggle" role="tablist" aria-label="Calculator mode">
+                <button type="button" class="calc-mode-btn is-active" id="mode-project-btn" onclick="setCalculatorMode('project')">Project Growth</button>
+                <button type="button" class="calc-mode-btn" id="mode-goal-btn" onclick="setCalculatorMode('goal')">Reach a Goal</button>
+            </div>
+
             <div class="historical-section">
                 <h2>Historical Market Context</h2>
                 <div id="historical-info">
@@ -1070,6 +1235,17 @@
                 <input type="number" id="inflation" value="4" step="0.1">
             </div>
         </div>
+
+        <div id="goal-fields" class="goal-fields">
+            <div class="input-group">
+                <label for="goal-corpus">Target Corpus</label>
+                <input type="number" id="goal-corpus" value="5" step="0.1" min="0">
+            </div>
+            <div class="input-group">
+                <label for="goal-year">Target Year</label>
+                <input type="number" id="goal-year" value="2046" step="1">
+            </div>
+        </div>
         
         <div class="variables-section">
             <h2>Custom Variables</h2>
@@ -1077,7 +1253,9 @@
             <button class="add-variable-btn" onclick="addCustomVariable()">+ Add Variable</button>
         </div>
         
-        <button class="calculate-btn" onclick="calculate()">Calculate Growth</button>
+        <button id="calculate-btn" class="calculate-btn" onclick="calculate()">Calculate Growth</button>
+
+        <div id="goal-summary" class="goal-summary" aria-live="polite"></div>
         
         <div class="chart-container">
             <canvas id="growthChart"></canvas>
@@ -1190,6 +1368,7 @@
         let currentCumulativeState = null;
         let selectedHeatmapRowId = null;
         let topFundsLoaded = false;
+        let calculatorMode = 'project';
         
         function addCustomVariable() {
             variableIdCounter++;
@@ -1279,7 +1458,218 @@
             if (unit === 'crores') return value * 10000000;
             return value;
         }
-        
+
+        function convertFromAbsolute(value, currency, inrUnit) {
+            if (currency !== 'INR') return value;
+            if (inrUnit === 'lakhs') return value / 100000;
+            if (inrUnit === 'crores') return value / 10000000;
+            return value;
+        }
+
+        function setCalculatorMode(mode) {
+            calculatorMode = mode === 'goal' ? 'goal' : 'project';
+
+            const projectBtn = document.getElementById('mode-project-btn');
+            const goalBtn = document.getElementById('mode-goal-btn');
+            const goalFields = document.getElementById('goal-fields');
+            const calculateBtn = document.getElementById('calculate-btn');
+            const goalSummary = document.getElementById('goal-summary');
+
+            projectBtn.classList.toggle('is-active', calculatorMode === 'project');
+            goalBtn.classList.toggle('is-active', calculatorMode === 'goal');
+            goalFields.classList.toggle('is-visible', calculatorMode === 'goal');
+            calculateBtn.textContent = calculatorMode === 'goal' ? 'Plan My Goal' : 'Calculate Growth';
+
+            if (calculatorMode !== 'goal') {
+                goalSummary.classList.remove('is-visible');
+                goalSummary.innerHTML = '';
+            } else {
+                const startYear = parseInt(document.getElementById('start-year').value, 10) || 2026;
+                const goalYearInput = document.getElementById('goal-year');
+                const goalYear = parseInt(goalYearInput.value, 10);
+                if (!Number.isFinite(goalYear) || goalYear <= startYear) {
+                    goalYearInput.value = startYear + 20;
+                }
+            }
+
+            calculate();
+        }
+
+        function simulateYearlyProjection({
+            initial,
+            monthlySIP,
+            annualStepUpRate,
+            annualRate,
+            inflationRate,
+            startYear,
+            years,
+            variables
+        }) {
+            const monthlyRate = annualRate / 12;
+            let current = initial;
+            const variableValues = {};
+            (variables || []).forEach(v => {
+                variableValues[v.id] = v.startValue;
+            });
+
+            const rows = [];
+
+            for (let yearOffset = 0; yearOffset < years; yearOffset++) {
+                const currentYear = startYear + yearOffset;
+                const startCorpus = current;
+                let totalSIP = 0;
+                const currentMonthlySIP = monthlySIP * Math.pow(1 + annualStepUpRate, yearOffset);
+
+                for (let month = 1; month <= 12; month++) {
+                    const growth = current * monthlyRate;
+                    current = current + growth + currentMonthlySIP;
+                    totalSIP += currentMonthlySIP;
+                }
+
+                const growth = current - startCorpus - totalSIP;
+                const inflationFactor = Math.pow(1 + inflationRate, yearOffset + 1);
+                const inflationAdjusted = current / inflationFactor;
+                const rowVariables = {};
+                (variables || []).forEach(v => {
+                    rowVariables[v.id] = variableValues[v.id];
+                    variableValues[v.id] += 1;
+                });
+
+                rows.push({
+                    year: currentYear,
+                    yearOffset,
+                    startCorpus,
+                    monthlySIP: currentMonthlySIP,
+                    totalSIP,
+                    growth,
+                    endCorpus: current,
+                    inflationAdjusted,
+                    variables: rowVariables
+                });
+            }
+
+            return rows;
+        }
+
+        function findRequiredMonthlySIP({
+            initial,
+            annualStepUpRate,
+            annualRate,
+            inflationRate,
+            startYear,
+            years,
+            targetCorpus
+        }) {
+            if (years <= 0) return 0;
+            if (initial >= targetCorpus) return 0;
+
+            const project = (monthlySIP) => {
+                const rows = simulateYearlyProjection({
+                    initial,
+                    monthlySIP,
+                    annualStepUpRate,
+                    annualRate,
+                    inflationRate,
+                    startYear,
+                    years,
+                    variables: []
+                });
+                return rows[rows.length - 1].endCorpus;
+            };
+
+            let low = 0;
+            let high = Math.max(targetCorpus / (years * 12), 1);
+
+            while (project(high) < targetCorpus && high < 1e14) {
+                high *= 2;
+            }
+
+            for (let i = 0; i < 64; i++) {
+                const mid = (low + high) / 2;
+                if (project(mid) < targetCorpus) low = mid;
+                else high = mid;
+            }
+
+            return high;
+        }
+
+        function renderGoalSummary({
+            currency,
+            inrUnit,
+            targetCorpus,
+            targetYear,
+            startYear,
+            currentMonthlySIP,
+            requiredMonthlySIP,
+            rows,
+            goalHitYear
+        }) {
+            const summary = document.getElementById('goal-summary');
+            const finalRow = rows[rows.length - 1];
+            const finalCorpus = finalRow ? finalRow.endCorpus : 0;
+            const yearsToGoal = targetYear - startYear;
+            const sipGap = requiredMonthlySIP - currentMonthlySIP;
+            const reachedByTarget = finalCorpus >= targetCorpus;
+            const reachedEarly = goalHitYear !== null && goalHitYear < targetYear;
+
+            let statusClass = 'is-warning';
+            let statusLabel = 'Needs a boost';
+            let headline = `You need a higher SIP to reach your goal by ${targetYear}.`;
+
+            if (reachedEarly) {
+                statusClass = 'is-success';
+                statusLabel = 'Ahead of plan';
+                headline = `You're on track to hit this goal by ${goalHitYear}.`;
+            } else if (reachedByTarget) {
+                statusClass = 'is-success';
+                statusLabel = 'On track';
+                headline = `Your current plan reaches the goal by ${targetYear}.`;
+            }
+
+            const surplusOrShortfall = finalCorpus - targetCorpus;
+            const gapLabel = surplusOrShortfall >= 0 ? 'Surplus at target' : 'Shortfall at target';
+            const requiredNote = sipGap <= 0
+                ? 'Current SIP is enough for this target year.'
+                : `${formatNumber(sipGap, currency, inrUnit)} more per month than today.`;
+
+            summary.classList.add('is-visible');
+            summary.innerHTML = `
+                <div class="goal-summary-header">
+                    <div>
+                        <h3>${headline}</h3>
+                        <p class="goal-summary-copy">
+                            Goal ${formatNumber(targetCorpus, currency, inrUnit)} by ${targetYear}
+                            · ${yearsToGoal} year${yearsToGoal === 1 ? '' : 's'} from ${startYear}
+                        </p>
+                    </div>
+                    <div class="goal-status-pill ${statusClass}">${statusLabel}</div>
+                </div>
+                <div class="goal-metric-grid">
+                    <div class="goal-metric">
+                        <span class="goal-metric-label">Required SIP</span>
+                        <span class="goal-metric-value">${formatNumber(requiredMonthlySIP, currency, inrUnit)}</span>
+                        <span class="goal-metric-note">${requiredNote}</span>
+                    </div>
+                    <div class="goal-metric">
+                        <span class="goal-metric-label">Goal reached</span>
+                        <span class="goal-metric-value">${goalHitYear === null ? 'Later' : goalHitYear}</span>
+                        <span class="goal-metric-note">${
+                            goalHitYear === null
+                                ? `Not reached by ${targetYear} with current SIP.`
+                                : goalHitYear <= targetYear
+                                    ? `With your current monthly SIP of ${formatNumber(currentMonthlySIP, currency, inrUnit)}.`
+                                    : `After the target year with current SIP.`
+                        }</span>
+                    </div>
+                    <div class="goal-metric">
+                        <span class="goal-metric-label">${gapLabel}</span>
+                        <span class="goal-metric-value">${formatNumber(Math.abs(surplusOrShortfall), currency, inrUnit)}</span>
+                        <span class="goal-metric-note">Corpus at ${targetYear}: ${formatNumber(finalCorpus, currency, inrUnit)}</span>
+                    </div>
+                </div>
+            `;
+        }
+
         function calculate() {
             const currency = document.getElementById('currency').value;
             const inrUnit = document.getElementById('inrUnit').value;
@@ -1287,36 +1677,124 @@
             let initialMonthlySIP = parseFloat(document.getElementById('annual').value);
             const annualStepUpRate = parseFloat(document.getElementById('stepup').value) / 100;
             const annualRate = parseFloat(document.getElementById('return').value) / 100;
-            const monthlyRate = annualRate / 12;
-            const startYear = parseInt(document.getElementById('start-year').value);
+            const startYear = parseInt(document.getElementById('start-year').value, 10);
             const inflationRate = parseFloat(document.getElementById('inflation').value) / 100;
-            
+            const goalSummary = document.getElementById('goal-summary');
+
+            if (![initial, initialMonthlySIP, annualStepUpRate, annualRate, startYear, inflationRate].every(Number.isFinite)) {
+                return;
+            }
+
             if (currency === 'INR') {
                 initial = convertToRupees(initial, inrUnit);
                 initialMonthlySIP = convertToRupees(initialMonthlySIP, inrUnit);
             }
-            
-            // Initialize variable values
-            let variableValues = {};
-            customVariables.forEach(v => {
-                variableValues[v.id] = v.startValue;
+
+            let years = 30;
+            let targetCorpus = null;
+            let targetYear = null;
+            let requiredMonthlySIP = null;
+            let goalHitYear = null;
+
+            if (calculatorMode === 'goal') {
+                targetYear = parseInt(document.getElementById('goal-year').value, 10);
+                let goalInput = parseFloat(document.getElementById('goal-corpus').value);
+
+                if (!Number.isFinite(targetYear) || targetYear <= startYear) {
+                    goalSummary.classList.add('is-visible');
+                    goalSummary.innerHTML = `
+                        <div class="goal-summary-header">
+                            <div>
+                                <h3>Pick a target year after ${startYear}.</h3>
+                                <p class="goal-summary-copy">Goal mode needs a future year to plan toward.</p>
+                            </div>
+                            <div class="goal-status-pill is-warning">Check inputs</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                if (!Number.isFinite(goalInput) || goalInput <= 0) {
+                    goalSummary.classList.add('is-visible');
+                    goalSummary.innerHTML = `
+                        <div class="goal-summary-header">
+                            <div>
+                                <h3>Enter a target corpus greater than zero.</h3>
+                                <p class="goal-summary-copy">Set the wealth milestone you want to reach.</p>
+                            </div>
+                            <div class="goal-status-pill is-warning">Check inputs</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                targetCorpus = currency === 'INR' ? convertToRupees(goalInput, inrUnit) : goalInput;
+                years = targetYear - startYear;
+                requiredMonthlySIP = findRequiredMonthlySIP({
+                    initial,
+                    annualStepUpRate,
+                    annualRate,
+                    inflationRate,
+                    startYear,
+                    years,
+                    targetCorpus
+                });
+            } else {
+                goalSummary.classList.remove('is-visible');
+                goalSummary.innerHTML = '';
+            }
+
+            const rows = simulateYearlyProjection({
+                initial,
+                monthlySIP: initialMonthlySIP,
+                annualStepUpRate,
+                annualRate,
+                inflationRate,
+                startYear,
+                years,
+                variables: customVariables
             });
-            
-            let current = initial;
+
+            if (calculatorMode === 'goal' && targetCorpus !== null) {
+                const hitRow = rows.find(row => row.endCorpus >= targetCorpus);
+                goalHitYear = hitRow ? hitRow.year : null;
+
+                if (goalHitYear === null) {
+                    const extended = simulateYearlyProjection({
+                        initial,
+                        monthlySIP: initialMonthlySIP,
+                        annualStepUpRate,
+                        annualRate,
+                        inflationRate,
+                        startYear,
+                        years: Math.max(years + 20, 40),
+                        variables: []
+                    });
+                    const extendedHit = extended.find(row => row.endCorpus >= targetCorpus);
+                    goalHitYear = extendedHit ? extendedHit.year : null;
+                }
+
+                renderGoalSummary({
+                    currency,
+                    inrUnit,
+                    targetCorpus,
+                    targetYear,
+                    startYear,
+                    currentMonthlySIP: initialMonthlySIP,
+                    requiredMonthlySIP,
+                    rows,
+                    goalHitYear
+                });
+            }
+
             let html = '<tr><th>Year</th><th>Start Corpus</th><th>Monthly SIP</th><th>Total SIP</th><th>Growth</th><th>End Corpus</th><th>Inflation-Adjusted</th>';
-            
-            // Add variable columns
             customVariables.forEach(v => {
                 html += `<th>${v.name}</th>`;
             });
             html += '</tr>';
-            
-            let years = [];
-            let corpusValues = [];
-            let displayValues = [];
-            
-            // Prepare chart datasets - Tufte-style: minimal, clean, data-focused
-            let chartDatasets = [
+
+            const yearsLabels = [];
+            const chartDatasets = [
                 {
                     label: 'Corpus Growth',
                     data: [],
@@ -1326,7 +1804,7 @@
                     tension: 0.3,
                     yAxisID: 'y',
                     borderWidth: 2.5,
-                    pointRadius: 0, // Hide points - Tufte style, focus on line
+                    pointRadius: 0,
                     pointHoverRadius: 4
                 },
                 {
@@ -1343,12 +1821,8 @@
                     pointHoverRadius: 4
                 }
             ];
-            
-            // Variable colors for chart
-            const variableColors = [
-                '#ff3b30', '#5856d6', '#ff2d55', '#5ac8fa', '#34c759'
-            ];
-            
+
+            const variableColors = ['#ff3b30', '#5856d6', '#ff2d55', '#5ac8fa', '#34c759'];
             customVariables.forEach((v, i) => {
                 chartDatasets.push({
                     label: v.name,
@@ -1359,137 +1833,85 @@
                     tension: 0.3,
                     yAxisID: 'y1',
                     borderWidth: 1.5,
-                    pointRadius: 0, // No data points - Tufte style
+                    pointRadius: 0,
                     pointHoverRadius: 3
                 });
             });
-            
-            for (let yearOffset = 0; yearOffset < 30; yearOffset++) {
-                const currentYear = startYear + yearOffset;
-                const startCorpus = current;
-                let totalSIP = 0;
-                
-                // Calculate current year's monthly SIP with step-up
-                let currentMonthlySIP = initialMonthlySIP * Math.pow(1 + annualStepUpRate, yearOffset);
-                
-                // Monthly compounding and SIP contributions for 12 months
-                for (let month = 1; month <= 12; month++) {
-                    // Add SIP at the end of the month (standard SIP practice)
-                    const growth = current * monthlyRate;
-                    current = current + growth + currentMonthlySIP;
-                    totalSIP += currentMonthlySIP;
-                }
-                
-                const growth = current - startCorpus - totalSIP;
-                
-                // Calculate inflation-adjusted (present value)
-                const inflationFactor = Math.pow(1 + inflationRate, yearOffset + 1);
-                const inflationAdjusted = current / inflationFactor;
-                
+
+            let goalDisplayValue = null;
+            if (calculatorMode === 'goal' && targetCorpus !== null) {
+                goalDisplayValue = convertFromAbsolute(targetCorpus, currency, inrUnit);
+                chartDatasets.push({
+                    label: 'Goal',
+                    data: [],
+                    borderColor: '#34c759',
+                    backgroundColor: 'transparent',
+                    borderDash: [6, 4],
+                    tension: 0,
+                    yAxisID: 'y',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    pointHoverRadius: 0
+                });
+            }
+
+            const goalDatasetIndex = chartDatasets.length - 1;
+
+            rows.forEach(row => {
+                const isGoalHitRow = calculatorMode === 'goal' && goalHitYear === row.year;
+                const rowClass = isGoalHitRow ? ' class="goal-hit-row"' : '';
                 html += `
-                    <tr>
-                        <td>${currentYear}</td>
-                        <td>${formatNumber(startCorpus, currency, inrUnit)}</td>
-                        <td>${formatNumber(currentMonthlySIP, currency, inrUnit)}</td>
-                        <td>${formatNumber(totalSIP, currency, inrUnit)}</td>
-                        <td class="positive">+${formatNumber(growth, currency, inrUnit)}</td>
-                        <td>${formatNumber(current, currency, inrUnit)}</td>
-                        <td>${formatNumber(inflationAdjusted, currency, inrUnit)}</td>
+                    <tr${rowClass}>
+                        <td>${row.year}</td>
+                        <td>${formatNumber(row.startCorpus, currency, inrUnit)}</td>
+                        <td>${formatNumber(row.monthlySIP, currency, inrUnit)}</td>
+                        <td>${formatNumber(row.totalSIP, currency, inrUnit)}</td>
+                        <td class="positive">+${formatNumber(row.growth, currency, inrUnit)}</td>
+                        <td>${formatNumber(row.endCorpus, currency, inrUnit)}</td>
+                        <td>${formatNumber(row.inflationAdjusted, currency, inrUnit)}</td>
                 `;
-                
-                // Update and add variable values to row
+
                 customVariables.forEach(v => {
-                    html += `<td>${variableValues[v.id]}</td>`;
-                    // Increment variables only after the first year
-                    variableValues[v.id] += 1;
+                    html += `<td>${row.variables[v.id]}</td>`;
                 });
                 html += '</tr>';
-                
-                years.push(currentYear);
-                corpusValues.push(current);
-                
-                let displayValue, displayInflationAdjusted;
-                if (currency === 'INR') {
-                    if (inrUnit === 'lakhs') {
-                        displayValue = current / 100000;
-                        displayInflationAdjusted = inflationAdjusted / 100000;
-                    } else if (inrUnit === 'crores') {
-                        displayValue = current / 10000000;
-                        displayInflationAdjusted = inflationAdjusted / 10000000;
-                    } else {
-                        displayValue = current;
-                        displayInflationAdjusted = inflationAdjusted;
-                    }
-                } else {
-                    displayValue = current;
-                    displayInflationAdjusted = inflationAdjusted;
-                }
-                
-                displayValues.push(displayValue);
+
+                yearsLabels.push(row.year);
+
+                const displayValue = convertFromAbsolute(row.endCorpus, currency, inrUnit);
+                const displayInflationAdjusted = convertFromAbsolute(row.inflationAdjusted, currency, inrUnit);
+
                 chartDatasets[0].data.push(displayValue);
                 chartDatasets[1].data.push(displayInflationAdjusted);
-                
-                // Add variable data to chart (adjust index since we added inflation)
                 customVariables.forEach((v, i) => {
-                    // For chart, we need the value BEFORE increment (same as table)
-                    chartDatasets[i + 2].data.push(variableValues[v.id] - 1);
+                    chartDatasets[i + 2].data.push(row.variables[v.id]);
                 });
-            }
-            
+
+                if (goalDisplayValue !== null) {
+                    chartDatasets[goalDatasetIndex].data.push(goalDisplayValue);
+                }
+            });
+
             document.getElementById('results').innerHTML = html;
-            
+
             const ctx = document.getElementById('growthChart').getContext('2d');
-            let symbol = currency === 'INR' ? '₹' : '$';
+            const symbol = currency === 'INR' ? '₹' : '$';
             let unitSuffix = '';
-            
             if (currency === 'INR') {
-                if (inrUnit === 'lakhs') {
-                    unitSuffix = ' L';
-                } else if (inrUnit === 'crores') {
-                    unitSuffix = ' Cr';
-                }
+                if (inrUnit === 'lakhs') unitSuffix = ' L';
+                else if (inrUnit === 'crores') unitSuffix = ' Cr';
             }
-            
-            if (chart) {
-                chart.destroy();
-            }
-            
-            // Create scales config
-            let scales = {
-                y: {
-                    type: 'linear',
-                    position: 'left',
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return symbol + value.toLocaleString() + unitSuffix;
-                        }
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Year'
-                    }
-                }
-            };
-            
-            // Add second y-axis for variables if needed
-            if (customVariables.length > 0) {
-                scales.y1 = {
-                    type: 'linear',
-                    position: 'right',
-                    beginAtZero: true,
-                    grid: {
-                        drawOnChartArea: false
-                    }
-                };
-            }
-            
+
+            if (chart) chart.destroy();
+
+            const chartTitle = calculatorMode === 'goal'
+                ? `Path to ${formatNumber(targetCorpus, currency, inrUnit)} by ${targetYear}`
+                : 'Corpus Growth Over 30 Years';
+
             chart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: years,
+                    labels: yearsLabels,
                     datasets: chartDatasets
                 },
                 options: {
@@ -1502,7 +1924,7 @@
                     plugins: {
                         title: {
                             display: true,
-                            text: 'Corpus Growth Over 30 Years',
+                            text: chartTitle,
                             font: {
                                 size: 18,
                                 weight: 600
@@ -1539,7 +1961,7 @@
                             cornerRadius: 8,
                             callbacks: {
                                 label: function(context) {
-                                    if (context.datasetIndex === 0 || context.datasetIndex === 1) {
+                                    if (context.dataset.label === 'Goal' || context.datasetIndex === 0 || context.datasetIndex === 1) {
                                         return context.dataset.label + ': ' + symbol + context.parsed.y.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + unitSuffix;
                                     }
                                     return context.dataset.label + ': ' + context.parsed.y;
@@ -1571,6 +1993,7 @@
                             type: 'linear',
                             position: 'right',
                             beginAtZero: true,
+                            display: customVariables.length > 0,
                             grid: {
                                 display: false,
                                 drawBorder: false
@@ -1644,21 +2067,26 @@
             const inrUnit = document.getElementById('inrUnit').value;
             const initialInput = document.getElementById('initial');
             const annualInput = document.getElementById('annual');
+            const goalCorpusInput = document.getElementById('goal-corpus');
             
             if (currency === 'INR') {
                 if (inrUnit === 'rupees') {
                     initialInput.step = '1000';
                     annualInput.step = '100';
+                    goalCorpusInput.step = '1000';
                 } else if (inrUnit === 'lakhs') {
                     initialInput.step = '0.1';
                     annualInput.step = '0.01';
+                    goalCorpusInput.step = '0.1';
                 } else if (inrUnit === 'crores') {
                     initialInput.step = '0.01';
                     annualInput.step = '0.001';
+                    goalCorpusInput.step = '0.1';
                 }
             } else {
                 initialInput.step = '1000';
                 annualInput.step = '50';
+                goalCorpusInput.step = '1000';
             }
         }
         
@@ -1686,6 +2114,8 @@
         
         document.getElementById('start-year').addEventListener('change', calculate);
         document.getElementById('inflation').addEventListener('change', calculate);
+        document.getElementById('goal-corpus').addEventListener('change', calculate);
+        document.getElementById('goal-year').addEventListener('change', calculate);
         
         updateInputSteps();
         updateHistoricalInfo();
