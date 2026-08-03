@@ -1,6 +1,6 @@
 # MilestoneMoney
 
-A beautiful, professional SIP (Systematic Investment Plan) calculator with inflation adjustment and Tufte-style data visualization.
+A beautiful, professional wealth planner for SIP projections and goal planning, with inflation adjustment and boardroom-ready visualization.
 
 ## Features
 
