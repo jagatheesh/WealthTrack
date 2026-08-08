@@ -2452,6 +2452,12 @@
             const returnPct = parseFloat(document.getElementById('return').value);
             const endYear = finalRow ? finalRow.year : startYear;
 
+            let milestoneRow = finalRow;
+            if (calculatorMode === 'goal' && goalHitYear != null) {
+                milestoneRow = rows.find(row => row.year === goalHitYear) || finalRow;
+            }
+            const milestoneDetail = formatMilestoneDetail(milestoneRow && milestoneRow.variables);
+
             renderSipExecutiveViz({
                 currency,
                 inrUnit,
@@ -2467,7 +2473,8 @@
                 targetYear,
                 goalHitYear,
                 requiredMonthlySIP,
-                currentMonthlySIP: initialMonthlySIP
+                currentMonthlySIP: initialMonthlySIP,
+                milestoneDetail
             });
 
             const ctx = document.getElementById('growthChart').getContext('2d');
@@ -2556,6 +2563,18 @@
             });
         }
 
+        function formatMilestoneDetail(rowVariables) {
+            if (!rowVariables || !customVariables.length) return '';
+            return customVariables
+                .map(v => {
+                    const value = rowVariables[v.id];
+                    if (value == null || value === '') return null;
+                    return `${v.name} ${value}`;
+                })
+                .filter(Boolean)
+                .join(' · ');
+        }
+
         function renderSipExecutiveViz({
             currency,
             inrUnit,
@@ -2571,13 +2590,15 @@
             targetYear,
             goalHitYear,
             requiredMonthlySIP,
-            currentMonthlySIP
+            currentMonthlySIP,
+            milestoneDetail
         }) {
             const titleEl = document.getElementById('viz-action-title');
             const soWhatEl = document.getElementById('viz-so-what');
             const kpisEl = document.getElementById('viz-kpis');
             const legendEl = document.getElementById('viz-legend');
             const stepUpPct = Math.round((annualStepUpRate || 0) * 1000) / 10;
+            const variablesSuffix = milestoneDetail ? ` · ${milestoneDetail}` : '';
 
             let actionTitle = '';
             let soWhat = '';
@@ -2589,12 +2610,12 @@
                 if (goalHitYear != null && goalHitYear <= targetYear) {
                     const yearsEarly = targetYear - goalHitYear;
                     actionTitle = yearsEarly > 0
-                        ? `Current SIP reaches ${formatNumber(targetCorpus, currency, inrUnit)} by ${goalHitYear} — ${yearsEarly} year${yearsEarly === 1 ? '' : 's'} ahead of plan`
-                        : `Current SIP reaches ${formatNumber(targetCorpus, currency, inrUnit)} on schedule in ${targetYear}`;
+                        ? `Current SIP reaches ${formatNumber(targetCorpus, currency, inrUnit)} by ${goalHitYear} — ${yearsEarly} year${yearsEarly === 1 ? '' : 's'} ahead of plan${variablesSuffix}`
+                        : `Current SIP reaches ${formatNumber(targetCorpus, currency, inrUnit)} on schedule in ${targetYear}${variablesSuffix}`;
                     soWhat = `At ${returnPct}% assumed returns with ${stepUpPct}% annual SIP step-up, the existing contribution plan clears the milestone without increasing monthly outlay.`;
                     accentKey = 'ending';
                 } else {
-                    actionTitle = `${formatNumber(targetCorpus, currency, inrUnit)} by ${targetYear} needs ${formatNumber(required, currency, inrUnit)}/mo SIP`;
+                    actionTitle = `${formatNumber(targetCorpus, currency, inrUnit)} by ${targetYear} needs ${formatNumber(required, currency, inrUnit)}/mo SIP${variablesSuffix}`;
                     soWhat = gap > 0
                         ? `That is ${formatNumber(gap, currency, inrUnit)} more per month than today's SIP. Raise contributions or extend the horizon to close the gap.`
                         : `With current assumptions, the plan still falls short by the target year — revisit return or step-up assumptions.`;
@@ -2602,7 +2623,7 @@
                 }
             } else {
                 const gainShare = finalCorpus > 0 ? Math.round((totalGains / finalCorpus) * 100) : 0;
-                actionTitle = `By ${endYear}, corpus reaches ${formatNumber(finalCorpus, currency, inrUnit)} — ${formatNumber(finalReal, currency, inrUnit)} in today's money`;
+                actionTitle = `By ${endYear}, corpus reaches ${formatNumber(finalCorpus, currency, inrUnit)} — ${formatNumber(finalReal, currency, inrUnit)} in today's money${variablesSuffix}`;
                 soWhat = `Over ${endYear - startYear} years at ${returnPct}% returns, market gains contribute ~${gainShare}% of ending wealth; inflation erodes the rest of the headline number.`;
                 accentKey = 'ending';
             }
